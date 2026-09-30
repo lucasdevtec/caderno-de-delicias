@@ -3,13 +3,15 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Copy, Check, QrCode, Sparkles, CheckCircle2 } from "lucide-react";
+import { copyToClipboard } from "@/lib/utils";
 
 interface PixDonationCardProps {
   pixKey?: string;
   pixPayload?: string;
 }
 
-export const DEFAULT_PIX_KEY = "782b5623-0afa-4035-bbb6-7452045fddf3";
+export const DEFAULT_PIX_KEY =
+  process.env.NEXT_PUBLIC_PIX_KEY || "782b5623-0afa-4035-bbb6-7452045fddf3";
 export const DEFAULT_PIX_PAYLOAD =
   "00020126580014br.gov.bcb.pix0136782b5623-0afa-4035-bbb6-7452045fddf35204000053039865802BR5919Caderno de Delicias6009SAO PAULO62070503***63042616";
 
@@ -21,22 +23,18 @@ export function PixDonationCard({
   const [copiedPayload, setCopiedPayload] = useState(false);
 
   async function handleCopyKey() {
-    try {
-      await navigator.clipboard.writeText(pixKey);
+    const success = await copyToClipboard(pixKey);
+    if (success) {
       setCopiedKey(true);
       setTimeout(() => setCopiedKey(false), 2500);
-    } catch {
-      // Fallback
     }
   }
 
   async function handleCopyPayload() {
-    try {
-      await navigator.clipboard.writeText(pixPayload);
+    const success = await copyToClipboard(pixPayload);
+    if (success) {
       setCopiedPayload(true);
       setTimeout(() => setCopiedPayload(false), 2500);
-    } catch {
-      // Fallback
     }
   }
 

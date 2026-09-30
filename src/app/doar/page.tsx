@@ -1,22 +1,8 @@
 import React from "react";
-import Link from "next/link";
-import {
-  Heart,
-  Coffee,
-  QrCode,
-  ShieldCheck,
-  Sparkles,
-  Server,
-  Database,
-  Globe,
-  CheckCircle2,
-  ExternalLink,
-  BookOpen,
-} from "lucide-react";
+import { Heart } from "lucide-react";
+import { PixDonationCard } from "@/components/PixDonationCard";
 
 export default function DoarPage() {
-  const pixKey = "pix@cadernodedelicias.com.br";
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
       {/* Header */}
@@ -33,44 +19,8 @@ export default function DoarPage() {
         </p>
       </div>
 
-      {/* Card Principal: Doação via Pix */}
-      <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-3xl p-6 sm:p-10 shadow-md relative overflow-hidden space-y-6">
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
-          <div className="space-y-4 max-w-lg text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-semibold">
-              <Coffee className="w-3.5 h-3.5" /> Pague um Cafezinho para os Devs
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Contribua com qualquer valor no Pix
-            </h2>
-            <p className="text-white/90 text-xs sm:text-sm leading-relaxed">
-              Toda doação, seja de R$ 2, R$ 10 ou R$ 50, ajuda diretamente a pagar a hospedagem do servidor, banco de dados e manutenção do domínio <strong>cadernodedelicias.com.br</strong>.
-            </p>
-
-            <div className="pt-2 bg-black/20 p-4 rounded-2xl backdrop-blur-xs space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-orange-200 block">
-                Chave Pix (E-mail):
-              </span>
-              <div className="flex items-center justify-between gap-2 font-mono text-sm sm:text-base font-bold bg-white text-stone-900 px-3 py-2 rounded-xl">
-                <span className="truncate">{pixKey}</span>
-                <span className="text-xs text-orange-600 font-sans font-bold">Chave E-mail</span>
-              </div>
-            </div>
-          </div>
-
-          {/* QR Code Simbólico */}
-          <div className="bg-white p-6 rounded-2xl text-stone-900 text-center shadow-lg shrink-0 space-y-2">
-            <div className="w-36 h-36 bg-stone-100 rounded-xl flex flex-col items-center justify-center border border-stone-200">
-              <QrCode className="w-20 h-20 text-stone-800" />
-              <span className="text-[10px] text-stone-500 font-mono mt-1">PIX QR CODE</span>
-            </div>
-            <p className="text-[11px] font-bold text-stone-700">Abra o app do seu banco</p>
-          </div>
-        </div>
-
-        {/* Círculo decorativo */}
-        <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-white/10 pointer-events-none" />
-      </div>
+      {/* Card Principal: Doação via Pix com QR Code */}
+      <PixDonationCard />
 
       {/* Outras Formas de Apoio Contínuo */}
       <section className="space-y-4">
@@ -114,57 +64,39 @@ export default function DoarPage() {
         </div>
       </section>
 
-      {/* Transparência de Custos */}
-      <section id="transparencia" className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 space-y-6">
-        <div>
-          <h3 className="text-xl font-bold text-stone-900">
-            Para Onde Vão os Recursos?
-          </h3>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Total transparência com a comunidade gastronômica.
-          </p>
-        </div>
+      {/* Seção Transparência de Custos */}
+      <section id="transparencia" className="space-y-4 pt-6 border-t border-stone-200">
+        <h3 className="text-xl font-bold text-stone-900">
+          Transparência e Custos de Manutenção
+        </h3>
+        <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+          Para mantermos o <strong>Caderno de Delícias</strong> funcionando de forma rápida, segura e livre de anúncios invasivos, nossos custos mensais estimados de infraestrutura são:
+        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-stone-50">
-            <Server className="w-5 h-5 text-orange-600 mt-0.5" />
-            <div>
-              <h5 className="font-bold text-stone-900 text-xs sm:text-sm">Hospedagem Web</h5>
-              <p className="text-[11px] text-stone-500 mt-0.5">
-                Servidores para manter o site rápido em qualquer lugar do Brasil.
-              </p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 bg-orange-50/60 rounded-2xl border border-orange-200/80">
+            <div className="text-xs text-orange-800 font-semibold">Banco de Dados</div>
+            <div className="text-lg font-black text-stone-900 mt-1">~R$ 35/mês</div>
+            <p className="text-[11px] text-stone-600 mt-1">PostgreSQL gerenciado com backups diários.</p>
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-stone-50">
-            <Database className="w-5 h-5 text-amber-600 mt-0.5" />
-            <div>
-              <h5 className="font-bold text-stone-900 text-xs sm:text-sm">Banco de Dados</h5>
-              <p className="text-[11px] text-stone-500 mt-0.5">
-                PostgreSQL para armazenar suas receitas com segurança e backups diários.
-              </p>
-            </div>
+          <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80">
+            <div className="text-xs text-amber-800 font-semibold">Servidor Web / API</div>
+            <div className="text-lg font-black text-stone-900 mt-1">~R$ 40/mês</div>
+            <p className="text-[11px] text-stone-600 mt-1">Hospedagem Next.js com alta disponibilidade.</p>
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-stone-50">
-            <Globe className="w-5 h-5 text-emerald-600 mt-0.5" />
-            <div>
-              <h5 className="font-bold text-stone-900 text-xs sm:text-sm">Domínio .com.br</h5>
-              <p className="text-[11px] text-stone-500 mt-0.5">
-                Renovação anual do registro cadernodedelicias.com.br.
-              </p>
-            </div>
+          <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200/80">
+            <div className="text-xs text-emerald-800 font-semibold">Armazenamento & CDN</div>
+            <div className="text-lg font-black text-stone-900 mt-1">~R$ 20/mês</div>
+            <p className="text-[11px] text-stone-600 mt-1">Entrega rápida de fotos e assets.</p>
           </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-orange-50 border border-orange-200 text-xs text-orange-900 space-y-1">
-          <p className="font-bold flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-orange-700" />
-            Documento de Estratégia de Monetização Ética
-          </p>
-          <p className="text-orange-800 leading-relaxed">
-            Consulte o arquivo <code className="bg-orange-100 px-1 py-0.5 rounded font-mono text-[11px]">/docs/MONETIZATION.md</code> no repositório para conhecer todas as diretrizes e ideias futuras de sustentabilidade que nunca comprometem a experiência do usuário.
-          </p>
+          <div className="p-4 bg-stone-100 rounded-2xl border border-stone-200">
+            <div className="text-xs text-stone-700 font-semibold">Domínio & Segurança</div>
+            <div className="text-lg font-black text-stone-900 mt-1">~R$ 5/mês</div>
+            <p className="text-[11px] text-stone-600 mt-1">cadernodedelicias.com.br e certificados SSL.</p>
+          </div>
         </div>
       </section>
     </div>
