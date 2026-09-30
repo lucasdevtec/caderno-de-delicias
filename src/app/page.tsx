@@ -71,24 +71,24 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/80 border border-orange-200 text-orange-900 text-xs font-semibold shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-            <span>Monorepo Open Source • cadernodedelicias.com.br</span>
+            <span>Projeto Open Source • cadernodedelicias.com.br</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black text-stone-900 tracking-tight leading-none">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-tight sm:leading-none">
             Seu Caderno de Receitas,{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
               sem distrações.
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-stone-600 leading-relaxed">
+          <p className="max-w-2xl mx-auto text-sm sm:text-lg text-stone-600 leading-relaxed px-2">
             Crie suas receitas de família, organize em cadernos temáticos públicos ou privados, defina a ordem exata de cada prato e copie cadernos inspiradores com atribuição transparente.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 max-w-sm sm:max-w-none mx-auto">
             <Link
               href={user ? "/cadernos" : "/registro"}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all active:scale-98"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all active:scale-98"
             >
               <span>{user ? "Acessar Meus Cadernos" : "Começar Meu Caderno Grátis"}</span>
               <ArrowRight className="w-4 h-4" />
@@ -96,10 +96,10 @@ export default async function HomePage() {
 
             <Link
               href="/descobrir"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-semibold text-sm sm:text-base shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-3 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-semibold text-sm sm:text-base shadow-2xs transition-colors"
             >
               <BookMarked className="w-4 h-4 text-orange-600" />
-              <span>Explorar Cadernos da Comunidade</span>
+              <span>Explorar Cadernos</span>
             </Link>
           </div>
         </div>

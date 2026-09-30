@@ -5,24 +5,32 @@
 
 ---
 
-## 1. Estrutura do Monorepo
+## 1. Estrutura do Projeto
 
-O projeto adota a arquitetura de **npm workspaces** com separação clara de responsabilidades entre aplicações e pacotes compartilhados:
+O projeto é uma aplicação **Next.js Fullstack (App Router)** independente, consolidando o front-end web e a API REST no mesmo repositório:
 
 ```
-caderno-de-delicias/
-├── apps/
-│   ├── web/                     # Aplicação Next.js 15+ (App Router, Front-end & Back-end API)
-│   └── mobile/                  # Aplicação Expo / React Native (WebView shell + scaffolding nativo)
-├── packages/
-│   └── database/                # Schema Prisma, Migrações, Client compartilhado e Seeds
-├── docs/
-│   ├── MONETIZATION.md          # Diretrizes e ideias éticas de monetização
-│   └── ARCHITECTURE.md          # Este documento
-├── docker-compose.yml           # PostgreSQL + Web prontos para desenvolvimento e deploy
-├── package.json                 # Workspaces e scripts raiz
-├── AGENTS.md                    # Diretrizes de contribuição para agentes de IA e humanos
-└── README.md                    # Documentação principal
+web/
+├── src/
+│   ├── app/                     # App Router: Páginas, layouts e rotas de API (/api/*)
+│   │   ├── (auth)/              # Rotas de login e registro
+│   │   ├── api/                 # Endpoints REST (auth, cadernos, receitas, categorias)
+│   │   ├── cadernos/            # Páginas de listagem, criação, edição e detalhe de cadernos
+│   │   ├── descobrir/           # Feed público e busca global
+│   │   ├── doar/                # Página de doação via Pix e transparência de custos
+│   │   └── receitas/            # Páginas de minhas receitas, nova receita e detalhe
+│   ├── components/              # Componentes de interface (Navbar, Footer, Cards, Banners)
+│   └── lib/                     # Utilitários, auth (JWT/bcryptjs) e client do Prisma
+│       └── prisma/              # Singleton do PrismaClient e exportação de tipos/enums
+├── prisma/
+│   ├── schema.prisma            # Modelagem do banco relacional PostgreSQL
+│   └── seed.ts                  # Carga inicial com dados realistas da comunidade
+├── public/                      # Assets estáticos (ícones, logos, QR Code Pix)
+├── docs/                        # Documentações técnicas e de negócio
+├── .env.example                 # Exemplo de variáveis de ambiente
+├── AGENTS.md                    # Diretrizes de desenvolvimento e commits atômicos
+├── LICENSE                      # Licença MIT
+└── package.json                 # Dependências e scripts (dev, build, db:push, db:seed)
 ```
 
 ---
@@ -114,12 +122,24 @@ erDiagram
 
 ---
 
-## 5. Estratégia Mobile (React Native / Expo)
+## 5. Experiência Mobile & Responsividade
 
-- A pasta `apps/mobile` contém o projeto Expo configurado para distribuir o aplicativo em Android e iOS:
-  - **Abordagem WebView Acelerada**: O app inicial carrega de forma fluida a versão otimizada de `cadernodedelicias.com.br`, integrando:
-    - Suporte a Safe Area (Notch, Dynamic Island e barras do sistema).
-    - Status bar integrada com as cores do Caderno de Delícias.
-    - Tela de carregamento nativa suave e tratamento de conectividade offline.
-    - Tratamento do botão Voltar nativo do Android para histórico de navegação.
-  - **Evolução Progressiva para Telas Nativas**: A arquitetura permite migrar progressivamente telas específicas (como o leitor de receitas em modo cozinha com timer, ou a câmera para ler receitas) para código 100% nativo.
+- A aplicação web foi desenhada com foco em **Mobile-First**:
+  - `MobileBottomNav`: Barra de navegação inferior estilo aplicativo nativo para telas pequenas.
+  - Safe Area & Viewport otimizados para notch e ilha dinâmica (`viewportFit: "cover"`).
+  - Regras no CSS global para evitar zoom indesejado ao focar em inputs no iOS Safari (`font-size: 16px`).
+  - Toque suave com `-webkit-tap-highlight-color: transparent` e layout com `main` flexível para acomodar navegações inferiores.
+
+---
+
+## 6. Sistema de Doações via Pix & Sustentabilidade Aberta
+
+- **DonationBanner (`src/components/DonationBanner.tsx`)**:
+  - Banner dinâmico na página inicial que permite cópia imediata da chave Pix com feedback visual sem sair da tela.
+  - Botão para abrir modal rápido com QR Code e código Copia e Cola.
+  - Link direto para a página `/doar` com detalhamento das metas e infraestrutura.
+- **PixDonationCard (`src/components/PixDonationCard.tsx`)**:
+  - Componente completo exibindo a chave aleatória oficial, BR Code Pix Copia e Cola compatível com o padrão do Banco Central, e renderização direta do QR Code SVG.
+  - Função utilitária de cópia robusta (`copyToClipboard`) com fallback cross-browser (`document.execCommand`).
+- **Transparência de Custos (`/doar#transparencia`)**:
+  - Detalhamento dos custos fixos mensais de hospedagem, banco de dados gerenciado, domínio e armazenamento para prestação de contas com a comunidade.

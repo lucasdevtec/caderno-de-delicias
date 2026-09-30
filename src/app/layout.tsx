@@ -1,12 +1,21 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#EA580C",
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Caderno de Delícias - Organize e Compartilhe suas Receitas",
   description:
-    "Monorepo de código aberto para salvar suas receitas, organizar em cadernos públicos ou privados, ordenar pratos e copiar coleções com atribuição justa. cadernodedelicias.com.br",
+    "Plataforma de código aberto para salvar suas receitas, organizar em cadernos públicos ou privados, ordenar pratos e copiar coleções com atribuição justa. cadernodedelicias.com.br",
   keywords: [
     "receitas",
     "caderno de receitas",
@@ -37,9 +46,11 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className="antialiased flex flex-col min-h-screen selection:bg-orange-200 selection:text-orange-950">
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-20 md:pb-0">{children}</main>
         <Footer />
+        <MobileBottomNav />
       </body>
     </html>
   );
 }
+
