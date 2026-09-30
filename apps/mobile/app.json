@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Caderno de Delícias",
+    "slug": "caderno-de-delicias",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF7ED"
+    },
+    "scheme": "cadernodedelicias",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.cadernodedelicias.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#EA580C"
+      },
+      "package": "br.com.cadernodedelicias.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "cadernodedelicias.com.br",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "webUrl": "https://cadernodedelicias.com.br",
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}
