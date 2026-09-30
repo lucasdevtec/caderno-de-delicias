@@ -280,7 +280,7 @@ async function main() {
   // O usuário Lucas copiou o caderno público da Dona Maria
   const cadernoCopiadoLucas = await prisma.caderno.create({
     data: {
-      title: 'Sobremesas Favoritas da Maria (Meu Caderno)',
+      title: 'Sobremesas da Maria (Prática do Lucas)',
       slug: 'sobremesas-favoritas-maria',
       description:
         'Caderno copiado das deliciosas receitas da Dona Maria para eu praticar nos finais de semana.',

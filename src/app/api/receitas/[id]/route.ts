@@ -18,6 +18,11 @@ export async function GET(req: Request, { params }: RouteParams) {
       include: {
         user: { select: { id: true, name: true, username: true, image: true, bio: true } },
         cadernos: {
+          where: {
+            caderno: user
+              ? { OR: [{ isPublic: true }, { userId: user.id }] }
+              : { isPublic: true },
+          },
           include: {
             caderno: {
               select: {

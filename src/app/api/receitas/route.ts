@@ -66,8 +66,13 @@ export async function GET(req: Request) {
       include: {
         user: { select: { id: true, name: true, username: true, image: true } },
         cadernos: {
+          where: {
+            caderno: user
+              ? { OR: [{ isPublic: true }, { userId: user.id }] }
+              : { isPublic: true },
+          },
           include: {
-            caderno: { select: { id: true, title: true, slug: true, coverColor: true } },
+            caderno: { select: { id: true, title: true, slug: true, coverColor: true, isPublic: true } },
           },
         },
       },

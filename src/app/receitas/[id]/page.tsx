@@ -34,6 +34,11 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     include: {
       user: { select: { id: true, name: true, username: true, image: true, bio: true } },
       cadernos: {
+        where: {
+          caderno: user
+            ? { OR: [{ isPublic: true }, { userId: user.id }] }
+            : { isPublic: true },
+        },
         include: {
           caderno: {
             select: {
@@ -42,6 +47,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               slug: true,
               coverColor: true,
               isPublic: true,
+              userId: true,
             },
           },
         },
@@ -186,6 +192,11 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
                 style={{ backgroundColor: cr.caderno.coverColor || "#EA580C" }}
               >
                 <span>{cr.caderno.title}</span>
+                {user && cr.caderno.userId === user.id && !cr.caderno.isPublic && (
+                  <span className="text-[10px] bg-black/25 px-1.5 py-0.5 rounded-md font-medium">
+                    (Seu caderno privado)
+                  </span>
+                )}
               </Link>
             ))}
           </div>
