@@ -109,6 +109,9 @@ erDiagram
 3. **Preservação e Reordenação**:
    - As receitas vinculadas ao caderno original são copiadas para a tabela de junção `CadernoRecipe` do novo caderno, preservando inicialmente a ordem original (`position`).
    - O novo proprietário pode reordenar, adicionar novas receitas ou remover receitas no seu caderno copiado sem afetar o caderno original.
+4. **Exibição nas Receitas (Privacidade & Popularidade)**:
+   - Na página de detalhes da receita, a seção *"Esta receita está nos cadernos"* exibe no máximo **2 dos cadernos públicos mais acessados** da comunidade.
+   - Cadernos privados nunca têm títulos ou dados de autores expostos publicamente; exibe-se apenas a métrica agregada (*"Salvo em X cadernos privados"*), com link seguro para o próprio usuário caso ele possua a receita em seu caderno pessoal.
 
 ---
 

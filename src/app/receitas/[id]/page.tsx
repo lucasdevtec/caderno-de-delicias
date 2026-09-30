@@ -33,25 +33,6 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     },
     include: {
       user: { select: { id: true, name: true, username: true, image: true, bio: true } },
-      cadernos: {
-        where: {
-          caderno: user
-            ? { OR: [{ isPublic: true }, { userId: user.id }] }
-            : { isPublic: true },
-        },
-        include: {
-          caderno: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              coverColor: true,
-              isPublic: true,
-              userId: true,
-            },
-          },
-        },
-      },
     },
   });
 
@@ -77,6 +58,56 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
       </div>
     );
   }
+
+  // Busca até os 2 cadernos públicos mais acessados/populares e as contagens de privados
+  const [publicCadernoRecipes, totalPublicCount, privateCount, userPrivateCadernoRecipe] =
+    await Promise.all([
+      prisma.cadernoRecipe.findMany({
+        where: {
+          recipeId: recipe.id,
+          caderno: { isPublic: true },
+        },
+        include: {
+          caderno: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              coverColor: true,
+              isPublic: true,
+            },
+          },
+        },
+        orderBy: [
+          { caderno: { forks: { _count: "desc" } } },
+          { addedAt: "asc" },
+        ],
+        take: 2,
+      }),
+      prisma.cadernoRecipe.count({
+        where: {
+          recipeId: recipe.id,
+          caderno: { isPublic: true },
+        },
+      }),
+      prisma.cadernoRecipe.count({
+        where: {
+          recipeId: recipe.id,
+          caderno: { isPublic: false },
+        },
+      }),
+      user
+        ? prisma.cadernoRecipe.findFirst({
+            where: {
+              recipeId: recipe.id,
+              caderno: { userId: user.id, isPublic: false },
+            },
+            include: {
+              caderno: { select: { id: true, slug: true, title: true } },
+            },
+          })
+        : Promise.resolve(null),
+    ]);
 
   const totalMinutes = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
@@ -176,30 +207,54 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
         )}
       </div>
 
-      {/* Cadernos que contêm esta receita */}
-      {recipe.cadernos.length > 0 && (
-        <div className="p-4 bg-orange-50/60 rounded-2xl border border-orange-200/80 flex flex-wrap items-center gap-3">
-          <span className="text-xs font-bold text-orange-950 flex items-center gap-1.5">
-            <BookMarked className="w-4 h-4 text-orange-600" />
-            Esta receita está nos cadernos:
-          </span>
+      {/* Cadernos que contêm esta receita: até 2 públicos mais acessados + contagem de privados */}
+      {(publicCadernoRecipes.length > 0 || privateCount > 0) && (
+        <div className="p-4 bg-orange-50/60 rounded-2xl border border-orange-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {recipe.cadernos.map((cr) => (
+            <span className="text-xs font-bold text-orange-950 flex items-center gap-1.5 shrink-0">
+              <BookMarked className="w-4 h-4 text-orange-600" />
+              Esta receita está nos cadernos:
+            </span>
+
+            {/* Até 1 ou 2 cadernos públicos mais acessados/populares */}
+            {publicCadernoRecipes.map((cr) => (
               <Link
                 key={cr.caderno.id}
                 href={`/cadernos/${cr.caderno.slug || cr.caderno.id}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 shadow-2xs"
                 style={{ backgroundColor: cr.caderno.coverColor || "#EA580C" }}
+                title={`Ver caderno público: ${cr.caderno.title}`}
               >
                 <span>{cr.caderno.title}</span>
-                {user && cr.caderno.userId === user.id && !cr.caderno.isPublic && (
-                  <span className="text-[10px] bg-black/25 px-1.5 py-0.5 rounded-md font-medium">
-                    (Seu caderno privado)
-                  </span>
-                )}
               </Link>
             ))}
+
+            {/* Indicador de outros cadernos públicos além dos 2 principais */}
+            {totalPublicCount > 2 && (
+              <span className="text-xs text-stone-500 font-medium">
+                + {totalPublicCount - 2} outros
+              </span>
+            )}
           </div>
+
+          {/* Quantidade de cadernos privados em que esta receita foi guardada */}
+          {privateCount > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-stone-200/90 text-stone-600 text-xs font-medium shadow-2xs self-start sm:self-auto">
+              <Lock className="w-3.5 h-3.5 text-stone-400" />
+              <span>
+                Salvo em <strong>{privateCount}</strong> {privateCount === 1 ? "caderno pessoal privado" : "cadernos pessoais privados"}
+              </span>
+              {userPrivateCadernoRecipe && (
+                <Link
+                  href={`/cadernos/${userPrivateCadernoRecipe.caderno.slug || userPrivateCadernoRecipe.caderno.id}`}
+                  className="text-orange-600 font-bold hover:underline ml-1"
+                  title="Abrir o seu caderno privado onde esta receita está guardada"
+                >
+                  (incluindo o seu)
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       )}
 
