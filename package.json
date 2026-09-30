@@ -1,0 +1,34 @@
+{
+  "name": "caderno-de-delicias-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Caderno de Delícias (cadernodedelicias.com.br) - Monorepo Open Source para organizar e compartilhar cadernos de receitas",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@caderno/web",
+    "dev:mobile": "npm run start --workspace=@caderno/mobile",
+    "build": "npm run build --workspace=@caderno/web",
+    "start": "npm run start --workspace=@caderno/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:generate": "npm run db:generate --workspace=@caderno/database",
+    "db:push": "npm run db:push --workspace=@caderno/database",
+    "db:migrate": "npm run db:migrate --workspace=@caderno/database",
+    "db:seed": "npm run db:seed --workspace=@caderno/database",
+    "db:studio": "npm run db:studio --workspace=@caderno/database"
+  },
+  "keywords": [
+    "receitas",
+    "caderno-de-receitas",
+    "culinaria",
+    "nextjs",
+    "react-native",
+    "expo",
+    "prisma",
+    "opensource"
+  ],
+  "author": "Caderno de Delícias Community",
+  "license": "MIT"
+}
