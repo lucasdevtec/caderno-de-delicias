@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Manter o repositório **Caderno de Delícias** (`cadernodedelicias.com.br`) simples, seguro e previsível, com o mínimo de mudanças necessárias para entregar cada tarefa.
+Manter o repositório simples, seguro e previsível, com o mínimo de mudanças necessárias para entregar cada tarefa.
 
 Prioridades:
 
@@ -65,10 +65,11 @@ Regras:
 
 Exemplos:
 
-- `feat: implement recipe fork with attribution`
-- `fix: preserve recipe order index in notebook`
-- `refactor: isolate database prisma client package`
-- `docs: add monetization guidelines`
+- `feat: add user invitation flow`
+- `fix: prevent duplicate study cycles`
+- `refactor: isolate tenant repository`
+- `test: cover cycle creation`
+- `docs: update local setup`
 
 ### Histórico
 
@@ -82,7 +83,7 @@ Exemplos:
 ### Branches
 
 - Não crie branches desnecessárias para tarefas triviais quando o fluxo existente do projeto não exigir isso.
-- Respeite a estratégia de branches já adotada pelo repositório (`main`).
+- Respeite a estratégia de branches já adotada pelo repositório.
 - Não altere a branch atual sem necessidade.
 - Nunca faça merge/rebase/push para outra branch sem que isso faça parte da tarefa ou tenha sido explicitamente solicitado.
 
@@ -126,6 +127,22 @@ Para uma tarefa de código:
 - Se o working tree já possuir mudanças, trate-as como pertencentes ao usuário até prova em contrário.
 - Se uma mudança pré-existente interferir na tarefa, explique o conflito e peça orientação antes de descartá-la.
 - Não gere arquivos temporários dentro do repositório sem necessidade; remova artefatos temporários criados durante o trabalho.
+
+## Quando perguntar
+
+Pergunte antes de agir quando houver ambiguidade material, especialmente sobre:
+
+- comportamento esperado;
+- alteração de API ou contrato;
+- mudança de banco/migração;
+- remoção de código ou dados;
+- escolha entre arquiteturas com impactos relevantes;
+- alteração de dependências;
+- estratégia de branch/merge/rebase;
+- necessidade de quebrar uma tarefa em commits diferentes;
+- qualquer operação potencialmente destrutiva.
+
+Se a decisão for pequena, reversível e claramente determinada pelo contexto do projeto, decida e siga em frente.
 
 ## Regra final
 
