@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUp, ArrowDown, Check, Loader2, GripVertical, UtensilsCrossed } from "lucide-react";
+import { ArrowUp, ArrowDown, Check, Loader2, GripVertical, UtensilsCrossed, Trash2 } from "lucide-react";
 
 export interface RecipeOrderItem {
   id: string;
@@ -29,9 +29,48 @@ export function RecipeOrderManager({
     [...initialRecipes].sort((a, b) => a.position - b.position)
   );
   const [saving, setSaving] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleRemoveRecipe(recipeId: string, recipeTitle: string) {
+    const confirmed = window.confirm(
+      `Deseja remover "${recipeTitle}" deste caderno?\n\nA receita original continuará salva no sistema.`
+    );
+    if (!confirmed) return;
+
+    setRemovingId(recipeId);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch(`/api/cadernos/${cadernoId}/receitas`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipeId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao remover receita do caderno.");
+      }
+
+      setRecipes((prev) =>
+        prev
+          .filter((r) => r.id !== recipeId)
+          .map((item, idx) => ({ ...item, position: idx }))
+      );
+      setSuccess(true);
+      if (onOrderSaved) {
+        onOrderSaved();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao remover receita.";
+      setErrorMsg(msg);
+    } finally {
+      setRemovingId(null);
+    }
+  }
 
   function moveItem(index: number, direction: "up" | "down") {
     if (
@@ -198,7 +237,7 @@ export function RecipeOrderManager({
               )}
             </div>
 
-            {/* Controles de movimentação */}
+            {/* Controles de movimentação e remoção */}
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -219,6 +258,20 @@ export function RecipeOrderManager({
                 aria-label="Mover para baixo"
               >
                 <ArrowDown className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRemoveRecipe(recipe.id, recipe.title)}
+                disabled={removingId === recipe.id}
+                className="p-2.5 sm:p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl hover:bg-rose-50 text-stone-400 hover:text-rose-600 disabled:opacity-50 transition-colors cursor-pointer ml-1"
+                title="Remover receita deste caderno"
+                aria-label={`Remover ${recipe.title} deste caderno`}
+              >
+                {removingId === recipe.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-rose-600" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>

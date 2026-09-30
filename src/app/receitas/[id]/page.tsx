@@ -16,6 +16,7 @@ import {
   Lock,
 } from "lucide-react";
 import { RecipeIngredientsList } from "./RecipeIngredientsList";
+import { AddRecipeToCadernoButton } from "@/components/AddRecipeToCadernoButton";
 
 export const dynamic = "force-dynamic";
 
@@ -59,55 +60,86 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     );
   }
 
-  // Busca até os 2 cadernos públicos mais acessados/populares e as contagens de privados
-  const [publicCadernoRecipes, totalPublicCount, privateCount, userPrivateCadernoRecipe] =
-    await Promise.all([
-      prisma.cadernoRecipe.findMany({
-        where: {
-          recipeId: recipe.id,
-          caderno: { isPublic: true },
-        },
-        include: {
-          caderno: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              coverColor: true,
-              isPublic: true,
-            },
+  // Busca até os 2 cadernos públicos mais acessados/populares, contagens de privados e cadernos do usuário logado
+  const [
+    publicCadernoRecipes,
+    totalPublicCount,
+    privateCount,
+    userPrivateCadernoRecipe,
+    userCadernos,
+  ] = await Promise.all([
+    prisma.cadernoRecipe.findMany({
+      where: {
+        recipeId: recipe.id,
+        caderno: { isPublic: true },
+      },
+      include: {
+        caderno: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverColor: true,
+            isPublic: true,
           },
         },
-        orderBy: [
-          { caderno: { forks: { _count: "desc" } } },
-          { addedAt: "asc" },
-        ],
-        take: 2,
-      }),
-      prisma.cadernoRecipe.count({
-        where: {
-          recipeId: recipe.id,
-          caderno: { isPublic: true },
-        },
-      }),
-      prisma.cadernoRecipe.count({
-        where: {
-          recipeId: recipe.id,
-          caderno: { isPublic: false },
-        },
-      }),
-      user
-        ? prisma.cadernoRecipe.findFirst({
-            where: {
-              recipeId: recipe.id,
-              caderno: { userId: user.id, isPublic: false },
+      },
+      orderBy: [
+        { caderno: { forks: { _count: "desc" } } },
+        { addedAt: "asc" },
+      ],
+      take: 2,
+    }),
+    prisma.cadernoRecipe.count({
+      where: {
+        recipeId: recipe.id,
+        caderno: { isPublic: true },
+      },
+    }),
+    prisma.cadernoRecipe.count({
+      where: {
+        recipeId: recipe.id,
+        caderno: { isPublic: false },
+      },
+    }),
+    user
+      ? prisma.cadernoRecipe.findFirst({
+          where: {
+            recipeId: recipe.id,
+            caderno: { userId: user.id, isPublic: false },
+          },
+          include: {
+            caderno: { select: { id: true, slug: true, title: true } },
+          },
+        })
+      : Promise.resolve(null),
+    user
+      ? prisma.caderno.findMany({
+          where: { userId: user.id },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverColor: true,
+            isPublic: true,
+            recipes: {
+              where: { recipeId: recipe.id },
+              select: { id: true },
             },
-            include: {
-              caderno: { select: { id: true, slug: true, title: true } },
-            },
-          })
-        : Promise.resolve(null),
-    ]);
+          },
+          orderBy: { updatedAt: "desc" },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const initialUserCadernos = userCadernos.map((c) => ({
+    id: c.id,
+    title: c.title,
+    slug: c.slug,
+    coverColor: c.coverColor,
+    isPublic: c.isPublic,
+    hasRecipe: c.recipes.length > 0,
+  }));
 
   const totalMinutes = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
@@ -126,13 +158,24 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      <Link
-        href="/descobrir?tab=receitas"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Voltar para Receitas</span>
-      </Link>
+      {/* Top Navigation & Quick Action */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link
+          href="/descobrir?tab=receitas"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar para Receitas</span>
+        </Link>
+
+        <AddRecipeToCadernoButton
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          recipeSlug={recipe.slug}
+          isLoggedIn={Boolean(user)}
+          initialUserCadernos={initialUserCadernos}
+        />
+      </div>
 
       {/* Header & Cover Banner */}
       <div className="space-y-6">

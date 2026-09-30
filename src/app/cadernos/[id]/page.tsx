@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { ForkBadge } from "@/components/ForkBadge";
 import { CopyCadernoButton } from "@/components/CopyCadernoButton";
 import { RecipeCard } from "@/components/RecipeCard";
+import { RemoveRecipeFromCadernoButton } from "@/components/RemoveRecipeFromCadernoButton";
 import {
   Globe,
   Lock,
@@ -224,10 +225,19 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {caderno.recipes.map((cr, idx) => (
-              <div key={cr.id} className="relative">
+              <div key={cr.id} className="relative group">
                 <div className="absolute top-2 left-2 z-10 w-7 h-7 rounded-full bg-stone-900/80 text-white text-xs font-bold flex items-center justify-center backdrop-blur-xs shadow-xs">
                   #{idx + 1}
                 </div>
+                {isOwner && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <RemoveRecipeFromCadernoButton
+                      cadernoId={caderno.id}
+                      recipeId={cr.recipe.id}
+                      recipeTitle={cr.recipe.title}
+                    />
+                  </div>
+                )}
                 <RecipeCard recipe={cr.recipe} />
               </div>
             ))}

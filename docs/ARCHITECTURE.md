@@ -112,6 +112,14 @@ erDiagram
 4. **Exibição nas Receitas (Privacidade & Popularidade)**:
    - Na página de detalhes da receita, a seção *"Esta receita está nos cadernos"* exibe no máximo **2 dos cadernos públicos mais acessados** da comunidade.
    - Cadernos privados nunca têm títulos ou dados de autores expostos publicamente; exibe-se apenas a métrica agregada (*"Salvo em X cadernos privados"*), com link seguro para o próprio usuário caso ele possua a receita em seu caderno pessoal.
+5. **Adição a Cadernos Pessoais (`AddRecipeToCadernoButton`)**:
+   - Na página de detalhes da receita (`/receitas/[id]`), o usuário logado dispõe do botão de ação *"Salvar no Meu Caderno"*.
+   - Ao clicar, abre-se um modal permitindo adicionar a receita a qualquer um dos seus cadernos (com indicação visual se a receita já consta naquele caderno).
+   - **Regra de interface estrita**: A página da receita nunca exibe a opção de remoção, evitando exclusões acidentais fora do contexto da coleção.
+6. **Remoção Estritamente no Contexto do Caderno (`RemoveRecipeFromCadernoButton`)**:
+   - A opção de remover uma receita de um caderno só aparece **dentro do próprio caderno onde a receita está inserida**, e exclusivamente para o criador/dono do caderno.
+   - Disponível tanto na visualização do caderno (`/cadernos/[id]`) quanto na tela de reordenação (`/cadernos/[id]/editar` via `RecipeOrderManager`).
+   - A remoção desassocia o registro na tabela `CadernoRecipe`, mantendo a receita original intacta no banco de dados.
 
 ---
 
