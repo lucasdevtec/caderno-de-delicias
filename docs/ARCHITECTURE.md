@@ -130,11 +130,15 @@ erDiagram
 
 ## 4. Autenticação e Segurança
 
-- Suporte nativo a múltiplos provedores via **Auth.js / NextAuth**:
+- Suporte nativo a múltiplos provedores e fluxo de credenciais:
   1. **Credentials (Email e Senha)**: com hash seguro `bcryptjs`, validação via `zod` e sanitização.
   2. **Google OAuth**: Login em 1 clique com conta Google (`GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`).
-  3. Extensível para GitHub, Apple ou links mágicos por email.
-- Sessão gerenciada com JWT seguro ou persistência em banco via Adapter.
+  3. **Recuperação e Redefinição de Senha**:
+     - Solicitação em `/esqueci-senha` gerando token criptográfico seguro de 32 bytes (`VerificationToken`) com validade de 1 hora.
+     - Proteção contra enumeração de contas (resposta neutra de sucesso mesmo se e-mail não existir).
+     - Despacho modular via Resend ou log de depuração no terminal em desenvolvimento local.
+     - Redefinição em `/redefinir-senha?token=...`, atualização de hash via `bcryptjs` e invalidação atômica de tokens de uso único.
+- Sessão gerenciada com JWT seguro via cookies `HttpOnly` (`jose`) e controle de acesso baseado em papéis (`USER` e `ADMIN`).
 
 ---
 
