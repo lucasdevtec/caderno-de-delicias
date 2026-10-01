@@ -1,48 +1,48 @@
-"use client";
+'use client';
 
-import React, { useState, Suspense } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ChefHat, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import React, { useState, Suspense } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ChefHat, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || "/cadernos";
+  const returnUrl = searchParams.get('returnUrl') || '/cadernos';
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
+    setErrorMsg('');
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Falha ao realizar login.");
+        throw new Error(data.error || 'Falha ao realizar login.');
       }
 
       router.push(returnUrl);
       router.refresh();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro ao entrar.";
+      const message = err instanceof Error ? err.message : 'Erro ao entrar.';
       setErrorMsg(message);
       setLoading(false);
     }
   }
 
   function handleGoogleLogin() {
-    window.location.href = "/api/auth/google";
+    window.location.href = '/api/auth/google';
   }
 
   return (
@@ -95,9 +95,6 @@ function LoginForm() {
 
         <div className="relative flex items-center justify-center">
           <div className="border-t border-stone-200 w-full" />
-          <span className="bg-white px-3 text-[11px] font-medium text-stone-400 uppercase tracking-wider">
-            ou com e-mail
-          </span>
         </div>
 
         {/* Formulário de Credentials */}
@@ -156,7 +153,7 @@ function LoginForm() {
         </form>
 
         <p className="text-center text-xs text-stone-500">
-          Ainda não tem conta?{" "}
+          Ainda não tem conta?{' '}
           <Link
             href={`/registro?returnUrl=${encodeURIComponent(returnUrl)}`}
             className="font-bold text-orange-600 hover:underline"
@@ -182,4 +179,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-
