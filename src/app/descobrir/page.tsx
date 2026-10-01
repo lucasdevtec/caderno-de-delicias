@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -7,6 +8,21 @@ import { RecipeCard } from '@/components/RecipeCard';
 import { BookMarked, UtensilsCrossed, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Descobrir Receitas e Cadernos',
+  description:
+    'Explore centenas de receitas culinárias deliciosas e coleções criadas com carinho pela comunidade do Caderno de Delícias.',
+  alternates: {
+    canonical: '/descobrir',
+  },
+  openGraph: {
+    title: 'Descobrir Receitas e Cadernos | Caderno de Delícias',
+    description:
+      'Explore centenas de receitas culinárias deliciosas e coleções criadas com carinho pela comunidade do Caderno de Delícias.',
+    url: '/descobrir',
+  },
+};
 
 interface DescobrirPageProps {
   searchParams: Promise<{

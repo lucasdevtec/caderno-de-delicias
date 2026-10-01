@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +22,74 @@ export const dynamic = "force-dynamic";
 
 interface CadernoPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: CadernoPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const caderno = await prisma.caderno.findFirst({
+    where: {
+      OR: [{ id }, { slug: id }],
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      description: true,
+      coverColor: true,
+      coverImage: true,
+      isPublic: true,
+      user: {
+        select: {
+          name: true,
+          username: true,
+        },
+      },
+    },
+  });
+
+  if (!caderno || !caderno.isPublic) {
+    return {
+      title: "Caderno Não Encontrado ou Privado",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://cadernodedelicias.com.br").replace(/\/$/, "");
+  const cadernoUrl = `${baseUrl}/cadernos/${caderno.slug || caderno.id}`;
+  const authorName = caderno.user?.name || caderno.user?.username || "Comunidade";
+  const ogImage = caderno.coverImage
+    ? (caderno.coverImage.startsWith("http") ? caderno.coverImage : `${baseUrl}${caderno.coverImage}`)
+    : `${baseUrl}/icon.svg`;
+
+  const description =
+    caderno.description ||
+    `Coleção de receitas culinárias: ${caderno.title}, organizada por ${authorName} no Caderno de Delícias.`;
+
+  return {
+    title: caderno.title,
+    description,
+    alternates: {
+      canonical: cadernoUrl,
+    },
+    openGraph: {
+      title: `${caderno.title} | Caderno de Delícias`,
+      description,
+      url: cadernoUrl,
+      type: "website",
+      images: [
+        {
+          url: ogImage,
+          alt: caderno.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: caderno.title,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 export default async function CadernoDetailPage({ params }: CadernoPageProps) {
@@ -79,8 +148,44 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
     );
   }
 
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://cadernodedelicias.com.br").replace(/\/$/, "");
+  const cadernoUrl = `${baseUrl}/cadernos/${caderno.slug || caderno.id}`;
+  const authorName = caderno.user?.name || caderno.user?.username || "Comunidade";
+
+  const cadernoJsonLd = caderno.isPublic
+    ? {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: caderno.title,
+        description:
+          caderno.description ||
+          `Coleção de receitas: ${caderno.title} no Caderno de Delícias.`,
+        url: cadernoUrl,
+        author: {
+          "@type": "Person",
+          name: authorName,
+        },
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: caderno.recipes.length,
+          itemListElement: caderno.recipes.map((cr, idx) => ({
+            "@type": "ListItem",
+            position: idx + 1,
+            url: `${baseUrl}/receitas/${cr.recipe.slug || cr.recipe.id}`,
+            name: cr.recipe.title,
+          })),
+        },
+      }
+    : null;
+
   return (
     <div className="space-y-8 pb-16">
+      {cadernoJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(cadernoJsonLd) }}
+        />
+      )}
       {/* Top Hero Banner */}
       <div
         className="w-full relative text-white py-12 px-4 sm:px-6 lg:px-8 shadow-inner"

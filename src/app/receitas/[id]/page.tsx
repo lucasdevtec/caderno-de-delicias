@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -21,8 +22,83 @@ import { AddRecipeToCadernoButton } from '@/components/AddRecipeToCadernoButton'
 
 export const dynamic = 'force-dynamic';
 
+function toIsoDuration(minutes: number | null | undefined): string | undefined {
+  if (!minutes || minutes <= 0) return undefined;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0 && mins > 0) return `PT${hours}H${mins}M`;
+  if (hours > 0) return `PT${hours}H`;
+  return `PT${mins}M`;
+}
+
 interface ReceitaPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: ReceitaPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      OR: [{ id }, { slug: id }],
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      description: true,
+      coverImage: true,
+      isPublic: true,
+      user: {
+        select: {
+          name: true,
+          username: true,
+        },
+      },
+    },
+  });
+
+  if (!recipe || !recipe.isPublic) {
+    return {
+      title: 'Receita Não Encontrada ou Privada',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://cadernodedelicias.com.br').replace(/\/$/, '');
+  const recipeUrl = `${baseUrl}/receitas/${recipe.slug || recipe.id}`;
+  const authorName = recipe.user?.name || recipe.user?.username || 'Chef';
+  const ogImage = recipe.coverImage
+    ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
+    : `${baseUrl}/icon.svg`;
+
+  const description =
+    recipe.description || `Confira a receita de ${recipe.title} por ${authorName} no Caderno de Delícias.`;
+
+  return {
+    title: recipe.title,
+    description,
+    alternates: {
+      canonical: recipeUrl,
+    },
+    openGraph: {
+      title: `${recipe.title} | Caderno de Delícias`,
+      description,
+      url: recipeUrl,
+      type: 'article',
+      images: [
+        {
+          url: ogImage,
+          alt: recipe.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: recipe.title,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
@@ -173,8 +249,61 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
       description: string;
     }>) || [];
 
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://cadernodedelicias.com.br').replace(/\/$/, '');
+  const recipeUrl = `${baseUrl}/receitas/${recipe.slug || recipe.id}`;
+  const authorName = recipe.user?.name || recipe.user?.username || 'Chef da Comunidade';
+  const imageUrl = recipe.coverImage
+    ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
+    : `${baseUrl}/icon.svg`;
+
+  const recipeJsonLd = recipe.isPublic
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Recipe',
+        name: recipe.title,
+        image: [imageUrl],
+        description:
+          recipe.description ||
+          `Receita de ${recipe.title} compartilhada por ${authorName} no Caderno de Delícias.`,
+        author: {
+          '@type': 'Person',
+          name: authorName,
+        },
+        datePublished: recipe.createdAt.toISOString(),
+        dateModified: recipe.updatedAt.toISOString(),
+        prepTime: toIsoDuration(recipe.prepTimeMinutes),
+        cookTime: toIsoDuration(recipe.cookTimeMinutes),
+        totalTime: toIsoDuration(totalMinutes),
+        recipeYield: recipe.servings ? `${recipe.servings} porções` : undefined,
+        recipeCategory: recipe.category || undefined,
+        recipeIngredient: ingredients
+          .map(
+            (i) =>
+              `${i.quantity ? `${i.quantity} ` : ''}${i.unit ? `${i.unit} ` : ''}${i.item}`.trim()
+          )
+          .filter(Boolean),
+        recipeInstructions: instructions.map((inst, index) => ({
+          '@type': 'HowToStep',
+          name: inst.title || `Passo ${inst.stepNumber || index + 1}`,
+          text: inst.description,
+          position: inst.stepNumber || index + 1,
+        })),
+        inLanguage: 'pt-BR',
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': recipeUrl,
+        },
+      }
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      {recipeJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+        />
+      )}
       {/* Top Navigation & Quick Action */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link

@@ -1,6 +1,22 @@
 import React from "react";
+import type { Metadata } from "next";
 import { Heart } from "lucide-react";
 import { PixDonationCard } from "@/components/PixDonationCard";
+
+export const metadata: Metadata = {
+  title: "Apoie o Projeto",
+  description:
+    "Contribua com a manutenção do Caderno de Delícias. Projeto livre, comunitário e sem anúncios invasivos.",
+  alternates: {
+    canonical: "/doar",
+  },
+  openGraph: {
+    title: "Apoie o Caderno de Delícias | Software Livre e Comunitário",
+    description:
+      "Contribua com a manutenção do Caderno de Delícias. Projeto livre, comunitário e sem anúncios invasivos.",
+    url: "/doar",
+  },
+};
 
 export default function DoarPage() {
   return (
