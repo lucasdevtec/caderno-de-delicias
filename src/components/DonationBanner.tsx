@@ -5,11 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, Coffee, Copy, Check, QrCode, X } from "lucide-react";
 import { copyToClipboard } from "@/lib/utils";
-import { DEFAULT_PIX_KEY, DEFAULT_PIX_PAYLOAD } from "@/components/PixDonationCard";
+import { DEFAULT_PIX_KEY } from "@/components/PixDonationCard";
 
 export function DonationBanner() {
   const [copiedKey, setCopiedKey] = useState(false);
-  const [copiedPayload, setCopiedPayload] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
   async function handleCopyKey() {
@@ -17,14 +16,6 @@ export function DonationBanner() {
     if (success) {
       setCopiedKey(true);
       setTimeout(() => setCopiedKey(false), 2500);
-    }
-  }
-
-  async function handleCopyPayload() {
-    const success = await copyToClipboard(DEFAULT_PIX_PAYLOAD);
-    if (success) {
-      setCopiedPayload(true);
-      setTimeout(() => setCopiedPayload(false), 2500);
     }
   }
 
@@ -147,15 +138,6 @@ export function DonationBanner() {
                   {copiedKey ? "Copiada!" : "Copiar Chave"}
                 </button>
               </div>
-
-              <button
-                type="button"
-                onClick={handleCopyPayload}
-                className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <QrCode className="w-3.5 h-3.5 text-stone-600" />
-                <span>{copiedPayload ? "Código Pix Copiado!" : "Copiar Pix Copia e Cola"}</span>
-              </button>
             </div>
 
             <div className="pt-1">

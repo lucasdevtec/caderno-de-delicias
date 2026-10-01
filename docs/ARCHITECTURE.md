@@ -152,10 +152,10 @@ erDiagram
 
 - **DonationBanner (`src/components/DonationBanner.tsx`)**:
   - Banner dinâmico na página inicial que permite cópia imediata da chave Pix com feedback visual sem sair da tela.
-  - Botão para abrir modal rápido com QR Code e código Copia e Cola.
+  - Botão para abrir modal rápido com QR Code e cópia rápida da chave Pix oficial.
   - Link direto para a página `/doar` com detalhamento das metas e infraestrutura.
 - **PixDonationCard (`src/components/PixDonationCard.tsx`)**:
-  - Componente completo exibindo a chave aleatória oficial, BR Code Pix Copia e Cola compatível com o padrão do Banco Central, e renderização direta do QR Code SVG.
+  - Componente com grid responsivo exibindo a chave aleatória oficial com botão de 1 clique e renderização do QR Code SVG para escaneamento direto pelo app do banco.
   - Função utilitária de cópia robusta (`copyToClipboard`) com fallback cross-browser (`document.execCommand`).
 - **Transparência de Custos (`/doar#transparencia`)**:
   - Detalhamento dos custos fixos mensais de hospedagem, banco de dados gerenciado, domínio e armazenamento para prestação de contas com a comunidade.
