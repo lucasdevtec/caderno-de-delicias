@@ -136,9 +136,17 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
           {/* Autor e Ações */}
           <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/20">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center font-bold text-xs text-white">
-                {caderno.user.name?.[0]?.toUpperCase() || "C"}
-              </div>
+              {caderno.user.image ? (
+                <img
+                  src={caderno.user.image}
+                  alt={caderno.user.name || "Autor"}
+                  className="w-8 h-8 rounded-full object-cover border border-white/30 shadow-2xs"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center font-bold text-xs text-white">
+                  {caderno.user.name?.[0]?.toUpperCase() || "C"}
+                </div>
+              )}
               <span className="text-xs sm:text-sm font-medium text-white/95">
                 Organizado por{" "}
                 <strong className="font-bold">

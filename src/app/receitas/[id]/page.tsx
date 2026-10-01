@@ -258,11 +258,24 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-stone-600">
-              <span>Receita por:</span>
-              <strong className="text-stone-900 font-bold">
-                {recipe.user.name || `@${recipe.user.username}`}
-              </strong>
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-600">
+              {recipe.user.image ? (
+                <img
+                  src={recipe.user.image}
+                  alt={recipe.user.name || "Autor"}
+                  className="w-7 h-7 rounded-full object-cover border border-stone-200 shadow-2xs"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">
+                  {recipe.user.name?.[0]?.toUpperCase() || "C"}
+                </div>
+              )}
+              <div>
+                <span className="text-stone-500 text-xs">Receita por: </span>
+                <strong className="text-stone-900 font-bold">
+                  {recipe.user.name || `@${recipe.user.username}`}
+                </strong>
+              </div>
             </div>
           </div>
         </div>

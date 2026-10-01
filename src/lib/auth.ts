@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { getGravatarUrl } from "@/lib/avatar";
 
 const COOKIE_NAME = "caderno_session";
 const DEFAULT_SECRET = "caderno-de-delicias-super-secret-development-jwt-key-2026";
@@ -85,6 +86,10 @@ export async function getCurrentUser() {
         createdAt: true,
       },
     });
+
+    if (user && !user.image) {
+      user.image = getGravatarUrl(user.email);
+    }
     return user;
   } catch (error) {
     console.error("Erro ao buscar usuário atual:", error);

@@ -82,6 +82,14 @@ export async function findOrCreateGoogleUser(profile: GoogleUserProfile) {
   });
 
   if (existingAccount) {
+    // Sincroniza foto do Google caso tenha mudado ou esteja ausente
+    if (profile.picture && existingAccount.user.image !== profile.picture) {
+      const updatedUser = await prisma.user.update({
+        where: { id: existingAccount.user.id },
+        data: { image: profile.picture },
+      });
+      return updatedUser;
+    }
     return existingAccount.user;
   }
 
@@ -90,7 +98,15 @@ export async function findOrCreateGoogleUser(profile: GoogleUserProfile) {
     where: { email: profile.email },
   });
 
-  if (!user) {
+  if (user) {
+    // Sincroniza foto do Google se usuário já existia por e-mail/senha
+    if (profile.picture && user.image !== profile.picture) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { image: profile.picture },
+      });
+    }
+  } else {
     // Cria novo usuário
     const baseUsername = generateSlug(profile.name || profile.email.split("@")[0]);
     let username = baseUsername;
@@ -106,10 +122,23 @@ export async function findOrCreateGoogleUser(profile: GoogleUserProfile) {
         name: profile.name,
         username,
         email: profile.email,
-        image: profile.picture,
+        image: profile.picture || null,
         emailVerified: profile.email_verified ? new Date() : null,
       },
     });
+
+    // Cria caderno padrão para o novo usuário
+    await prisma.caderno.create({
+      data: {
+        title: "Meu Primeiro Caderno",
+        slug: "meu-primeiro-caderno",
+        description: "Meu cantinho especial para guardar receitas e delícias caseiras.",
+        coverColor: "#EA580C",
+        icon: "chef-hat",
+        isPublic: true,
+        userId: user.id,
+      },
+    }).catch(() => null);
   }
 
   // 3. Vincular Account do Google

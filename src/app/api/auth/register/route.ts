@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
 import { generateSlug } from "@/lib/slug";
+import { getGravatarUrl } from "@/lib/avatar";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -46,18 +47,22 @@ export async function POST(req: Request) {
       counter++;
     }
 
+    const defaultAvatar = getGravatarUrl(email);
+
     const user = await prisma.user.create({
       data: {
         name,
         username,
         email,
         passwordHash,
+        image: defaultAvatar,
       },
       select: {
         id: true,
         name: true,
         username: true,
         email: true,
+        image: true,
       },
     });
 

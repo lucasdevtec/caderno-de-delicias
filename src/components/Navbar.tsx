@@ -140,21 +140,38 @@ export function Navbar() {
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-stone-100 transition-colors cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">
-                    {user.name?.[0]?.toUpperCase() || "U"}
-                  </div>
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name || "Perfil"}
+                      className="w-8 h-8 rounded-full object-cover border border-orange-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">
+                      {user.name?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
                   <span className="text-xs font-semibold text-stone-700 max-w-[120px] truncate">
                     {user.name || user.email}
                   </span>
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-2 border-b border-stone-100">
-                      <p className="text-xs font-bold text-stone-900 truncate">
-                        {user.name || "Chef"}
-                      </p>
-                      <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-2 border-b border-stone-100 flex items-center gap-2.5">
+                      {user.image && (
+                        <img
+                          src={user.image}
+                          alt=""
+                          className="w-8 h-8 rounded-full object-cover border border-orange-200 shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-stone-900 truncate">
+                          {user.name || "Chef"}
+                        </p>
+                        <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                      </div>
                     </div>
 
                     <Link
@@ -200,10 +217,20 @@ export function Navbar() {
           {user && (
             <Link
               href="/cadernos"
-              className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs"
+              className="w-8 h-8 rounded-full overflow-hidden border border-orange-200 flex items-center justify-center"
               title="Meus Cadernos"
             >
-              {user.name?.[0]?.toUpperCase() || "U"}
+              {user.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name || "Perfil"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">
+                  {user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
             </Link>
           )}
           <button
@@ -245,6 +272,26 @@ export function Navbar() {
           <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
             {user ? (
               <>
+                <div className="flex items-center gap-2.5 p-2 bg-stone-50 rounded-2xl border border-stone-200/80 mb-1">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt=""
+                      className="w-9 h-9 rounded-full object-cover border border-orange-200 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs shrink-0">
+                      {user.name?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-stone-900 truncate">
+                      {user.name || "Chef"}
+                    </p>
+                    <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                  </div>
+                </div>
+
                 <Link
                   href="/receitas/nova"
                   onClick={() => setMobileMenuOpen(false)}
