@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Users, UtensilsCrossed } from "lucide-react";
+import { Clock, Users, UtensilsCrossed, Eye } from "lucide-react";
 import { formatMinutes, formatDifficulty } from "@/lib/utils";
 
 export interface RecipeCardData {
@@ -15,6 +15,7 @@ export interface RecipeCardData {
   difficulty?: string | null;
   category?: string | null;
   coverImage?: string | null;
+  viewsCount?: number | null;
   user?: {
     id?: string;
     name?: string | null;
@@ -107,6 +108,19 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
               <span className="inline-flex items-center gap-1 font-medium">
                 <Users className="w-3.5 h-3.5 text-stone-400" />
                 {recipe.servings} porções
+              </span>
+            )}
+            {typeof recipe.viewsCount === "number" && recipe.viewsCount > 0 && (
+              <span
+                className="inline-flex items-center gap-1 font-semibold text-stone-600 bg-stone-100/90 px-1.5 py-0.5 rounded-md text-[11px]"
+                title={`${recipe.viewsCount} visualizações`}
+              >
+                <Eye className="w-3 h-3 text-orange-600" />
+                <span>
+                  {recipe.viewsCount >= 1000
+                    ? `${(recipe.viewsCount / 1000).toFixed(1).replace(".0", "")}k`
+                    : recipe.viewsCount}
+                </span>
               </span>
             )}
           </div>

@@ -121,6 +121,7 @@ model Recipe {
   coverImage      String?
   isPublic        Boolean    @default(true)
   tips            String?    @db.Text
+  viewsCount      Int        @default(0)
 
   // JSON estruturado de ingredientes e passos
   // ingredients: [{ item: string, quantity: string, unit?: string }]
@@ -139,6 +140,7 @@ model Recipe {
   @@index([userId])
   @@index([isPublic])
   @@index([category])
+  @@index([viewsCount])
 }
 
 model CadernoRecipe {

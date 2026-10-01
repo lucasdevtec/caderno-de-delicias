@@ -82,6 +82,7 @@ erDiagram
         string tips
         string coverImage
         boolean isPublic
+        int viewsCount "Contador de visualizações e acessos"
         string userId FK
     }
 
@@ -120,6 +121,10 @@ erDiagram
    - A opção de remover uma receita de um caderno só aparece **dentro do próprio caderno onde a receita está inserida**, e exclusivamente para o criador/dono do caderno.
    - Disponível tanto na visualização do caderno (`/cadernos/[id]`) quanto na tela de reordenação (`/cadernos/[id]/editar` via `RecipeOrderManager`).
    - A remoção desassocia o registro na tabela `CadernoRecipe`, mantendo a receita original intacta no banco de dados.
+7. **Métricas de Acesso e Descoberta de Receitas (`/descobrir` e Home)**:
+   - A entidade `Recipe` possui o contador atômico `viewsCount`, incrementado de forma assíncrona a cada visualização de detalhe da receita (`/receitas/[id]`).
+   - Na tela de descoberta (`/descobrir`), a aba *Receitas da Comunidade* é classificada por padrão pelas **receitas mais acessadas** (`viewsCount: desc`), com suporte a alternância rápida para *Mais Recentes*.
+   - Os cards de receitas (`RecipeCard`) e a página de detalhes exibem o selo com ícone de visualização (`Eye`) indicando a popularidade do prato.
 
 ---
 

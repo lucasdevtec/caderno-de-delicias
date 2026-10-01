@@ -61,6 +61,12 @@ export async function GET(req: Request) {
       ];
     }
 
+    const sort = url.searchParams.get("sort");
+    const orderBy =
+      sort === "recentes"
+        ? [{ createdAt: "desc" as const }]
+        : [{ viewsCount: "desc" as const }, { createdAt: "desc" as const }];
+
     const recipes = await prisma.recipe.findMany({
       where: whereClause,
       include: {
@@ -76,7 +82,7 @@ export async function GET(req: Request) {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy,
     });
 
     return NextResponse.json({ recipes });

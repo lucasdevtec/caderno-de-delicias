@@ -1,10 +1,10 @@
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
-import { formatMinutes, formatDifficulty } from "@/lib/utils";
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { formatMinutes, formatDifficulty } from '@/lib/utils';
 import {
   Clock,
   Users,
@@ -14,11 +14,12 @@ import {
   BookMarked,
   CheckCircle2,
   Lock,
-} from "lucide-react";
-import { RecipeIngredientsList } from "./RecipeIngredientsList";
-import { AddRecipeToCadernoButton } from "@/components/AddRecipeToCadernoButton";
+  Eye,
+} from 'lucide-react';
+import { RecipeIngredientsList } from './RecipeIngredientsList';
+import { AddRecipeToCadernoButton } from '@/components/AddRecipeToCadernoButton';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface ReceitaPageProps {
   params: Promise<{ id: string }>;
@@ -33,13 +34,29 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
       OR: [{ id }, { slug: id }],
     },
     include: {
-      user: { select: { id: true, name: true, username: true, image: true, bio: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+          bio: true,
+        },
+      },
     },
   });
 
   if (!recipe) {
     notFound();
   }
+
+  // Incrementa contagem de acessos em segundo plano
+  prisma.recipe
+    .update({
+      where: { id: recipe.id },
+      data: { viewsCount: { increment: 1 } },
+    })
+    .catch((err) => console.error("Erro ao incrementar viewsCount:", err));
 
   const isAuthor = user?.id === recipe.userId;
   if (!recipe.isPublic && !isAuthor) {
@@ -84,10 +101,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
           },
         },
       },
-      orderBy: [
-        { caderno: { forks: { _count: "desc" } } },
-        { addedAt: "asc" },
-      ],
+      orderBy: [{ caderno: { forks: { _count: 'desc' } } }, { addedAt: 'asc' }],
       take: 2,
     }),
     prisma.cadernoRecipe.count({
@@ -127,7 +141,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               select: { id: true },
             },
           },
-          orderBy: { updatedAt: "desc" },
+          orderBy: { updatedAt: 'desc' },
         })
       : Promise.resolve([]),
   ]);
@@ -141,20 +155,23 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     hasRecipe: c.recipes.length > 0,
   }));
 
-  const totalMinutes = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
+  const totalMinutes =
+    (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
   // Typecast ingredients & instructions do JSON do Prisma
-  const ingredients = (recipe.ingredients as Array<{
-    item: string;
-    quantity: string;
-    unit?: string;
-  }>) || [];
+  const ingredients =
+    (recipe.ingredients as Array<{
+      item: string;
+      quantity: string;
+      unit?: string;
+    }>) || [];
 
-  const instructions = (recipe.instructions as Array<{
-    stepNumber: number;
-    title?: string;
-    description: string;
-  }>) || [];
+  const instructions =
+    (recipe.instructions as Array<{
+      stepNumber: number;
+      title?: string;
+      description: string;
+    }>) || [];
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -207,23 +224,38 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               {recipe.prepTimeMinutes ? (
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-orange-600" />
-                  <span>Preparo: <strong>{formatMinutes(recipe.prepTimeMinutes)}</strong></span>
+                  <span>
+                    Preparo:{' '}
+                    <strong>{formatMinutes(recipe.prepTimeMinutes)}</strong>
+                  </span>
                 </div>
               ) : null}
 
               {recipe.cookTimeMinutes ? (
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-orange-600" />
-                  <span>Cozimento: <strong>{formatMinutes(recipe.cookTimeMinutes)}</strong></span>
+                  <span>
+                    Cozimento:{' '}
+                    <strong>{formatMinutes(recipe.cookTimeMinutes)}</strong>
+                  </span>
                 </div>
               ) : null}
 
               {recipe.servings ? (
                 <div className="flex items-center gap-1.5">
                   <Users className="w-4 h-4 text-orange-600" />
-                  <span>Rende: <strong>{recipe.servings} porções</strong></span>
+                  <span>
+                    Rende: <strong>{recipe.servings} porções</strong>
+                  </span>
                 </div>
               ) : null}
+
+              <div className="flex items-center gap-1.5" title="Total de visualizações desta receita">
+                <Eye className="w-4 h-4 text-orange-600" />
+                <span>
+                  <strong>{(recipe.viewsCount || 0) + 1}</strong> acessos
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 text-xs sm:text-sm text-stone-600">
@@ -242,7 +274,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               src={recipe.coverImage}
               alt={recipe.title}
               fill
-              unoptimized={recipe.coverImage.startsWith("data:")}
+              unoptimized={recipe.coverImage.startsWith('data:')}
               className="object-cover"
               priority
             />
@@ -265,7 +297,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
                 key={cr.caderno.id}
                 href={`/cadernos/${cr.caderno.slug || cr.caderno.id}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 shadow-2xs"
-                style={{ backgroundColor: cr.caderno.coverColor || "#EA580C" }}
+                style={{ backgroundColor: cr.caderno.coverColor || '#EA580C' }}
                 title={`Ver caderno público: ${cr.caderno.title}`}
               >
                 <span>{cr.caderno.title}</span>
@@ -285,7 +317,8 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-stone-200/90 text-stone-600 text-xs font-medium shadow-2xs self-start sm:self-auto">
               <Lock className="w-3.5 h-3.5 text-stone-400" />
               <span>
-                Salvo em <strong>{privateCount}</strong> {privateCount === 1 ? "caderno pessoal privado" : "cadernos pessoais privados"}
+                Salvo em <strong>{privateCount}</strong>{' '}
+                {privateCount === 1 ? 'caderno pessoal' : 'cadernos pessoais'}
               </span>
               {userPrivateCadernoRecipe && (
                 <Link

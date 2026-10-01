@@ -1,10 +1,10 @@
-import React from "react";
-import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
-import { CadernoCard } from "@/components/CadernoCard";
-import { RecipeCard } from "@/components/RecipeCard";
-import { DonationBanner } from "@/components/DonationBanner";
+import React from 'react';
+import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { CadernoCard } from '@/components/CadernoCard';
+import { RecipeCard } from '@/components/RecipeCard';
+import { DonationBanner } from '@/components/DonationBanner';
 import {
   ChefHat,
   BookMarked,
@@ -15,9 +15,9 @@ import {
   Heart,
   ShieldCheck,
   Plus,
-} from "lucide-react";
+} from 'lucide-react';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const user = await getCurrentUser();
@@ -42,14 +42,19 @@ export default async function HomePage() {
         recipes: {
           include: {
             recipe: {
-              select: { id: true, title: true, coverImage: true, difficulty: true },
+              select: {
+                id: true,
+                title: true,
+                coverImage: true,
+                difficulty: true,
+              },
             },
           },
-          orderBy: { position: "asc" },
+          orderBy: { position: 'asc' },
         },
       },
       take: 6,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     receitasPublicas = await prisma.recipe.findMany({
@@ -58,10 +63,10 @@ export default async function HomePage() {
         user: { select: { id: true, name: true, username: true } },
       },
       take: 6,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ viewsCount: 'desc' }, { createdAt: 'desc' }],
     });
   } catch (err) {
-    console.error("Erro ao carregar dados da home:", err);
+    console.error('Erro ao carregar dados da home:', err);
   }
 
   return (
@@ -75,22 +80,26 @@ export default async function HomePage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-tight sm:leading-none">
-            Seu Caderno de Receitas,{" "}
+            Seu Caderno de Receitas,{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
               sem distrações.
             </span>
           </h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg text-stone-600 leading-relaxed px-2">
-            Crie suas receitas de família, organize em cadernos temáticos públicos ou privados, defina a ordem exata de cada prato e copie cadernos inspiradores com atribuição transparente.
+            Crie suas receitas de família, organize em cadernos temáticos
+            públicos ou privados, defina a ordem exata de cada prato e copie
+            cadernos inspiradores com atribuição transparente.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 max-w-sm sm:max-w-none mx-auto">
             <Link
-              href={user ? "/cadernos" : "/registro"}
+              href={user ? '/cadernos' : '/registro'}
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all active:scale-98"
             >
-              <span>{user ? "Acessar Meus Cadernos" : "Começar Meu Caderno Grátis"}</span>
+              <span>
+                {user ? 'Acessar Meus Cadernos' : 'Começar Meu Caderno Grátis'}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -99,7 +108,7 @@ export default async function HomePage() {
               className="inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-3 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-semibold text-sm sm:text-base shadow-2xs transition-colors"
             >
               <BookMarked className="w-4 h-4 text-orange-600" />
-              <span>Explorar Cadernos</span>
+              <span>Explorar</span>
             </Link>
           </div>
         </div>
@@ -115,9 +124,12 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 mb-3">
               <BookMarked className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-stone-900 text-base">Cadernos Temáticos</h3>
+            <h3 className="font-bold text-stone-900 text-base">
+              Cadernos Temáticos
+            </h3>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Agrupe suas receitas por momento: sobremesas de domingo, almoços rápidos, massas caseiras ou ceias de Natal.
+              Agrupe suas receitas por momento: sobremesas de domingo, almoços
+              rápidos, massas caseiras ou ceias de Natal.
             </p>
           </div>
 
@@ -125,9 +137,12 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 mb-3">
               <ArrowUpDown className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-stone-900 text-base">Controle de Ordem</h3>
+            <h3 className="font-bold text-stone-900 text-base">
+              Controle de Ordem
+            </h3>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Defina a sequência lógica dos pratos no caderno: entradas primeiro, pratos principais e depois as sobremesas.
+              Defina a sequência lógica dos pratos no caderno: entradas
+              primeiro, pratos principais e depois as sobremesas.
             </p>
           </div>
 
@@ -135,9 +150,12 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-3">
               <GitFork className="w-5 h-5 rotate-180" />
             </div>
-            <h3 className="font-bold text-stone-900 text-base">Cópia com Atribuição</h3>
+            <h3 className="font-bold text-stone-900 text-base">
+              Cópia com Atribuição
+            </h3>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Gostou do caderno de alguém? Copie para a sua conta em um clique, com link e crédito permanente ao autor público original.
+              Gostou do caderno de alguém? Copie para a sua conta em um clique,
+              com link e crédito permanente ao autor público original.
             </p>
           </div>
 
@@ -145,9 +163,12 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 mb-3">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-stone-900 text-base">Zero Anúncios Invasivos</h3>
+            <h3 className="font-bold text-stone-900 text-base">
+              Zero Anúncios Invasivos
+            </h3>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Sem vídeos saltando na tela nem pop-ups travando seu celular enquanto você cozinha. Mantido por doações.
+              Sem vídeos saltando na tela nem pop-ups travando seu celular
+              enquanto você cozinha. Mantido por doações.
             </p>
           </div>
         </div>
@@ -176,9 +197,15 @@ export default async function HomePage() {
         {cadernosPublicos.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-stone-300">
             <ChefHat className="w-12 h-12 text-orange-300 mx-auto mb-3" />
-            <h3 className="font-bold text-stone-800 text-lg">Seja o primeiro a compartilhar!</h3>
+            <h3 className="font-bold text-stone-800 text-lg">
+              Seja o primeiro a compartilhar!
+            </h3>
             <p className="text-sm text-stone-500 mt-1 max-w-md mx-auto">
-              Execute o comando <code className="bg-stone-100 px-2 py-0.5 rounded text-orange-700">npm run db:seed</code> ou cadastre o primeiro caderno da plataforma.
+              Execute o comando{' '}
+              <code className="bg-stone-100 px-2 py-0.5 rounded text-orange-700">
+                npm run db:seed
+              </code>{' '}
+              ou cadastre o primeiro caderno da plataforma.
             </p>
             <Link
               href="/cadernos/novo"
@@ -208,7 +235,7 @@ export default async function HomePage() {
               Pratos e Segredos
             </span>
             <h2 className="text-2xl font-black text-stone-900">
-              Receitas Recentes da Comunidade
+              Receitas Mais Acessadas da Comunidade
             </h2>
           </div>
           <Link
@@ -222,7 +249,9 @@ export default async function HomePage() {
 
         {receitasPublicas.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-2xl border border-stone-200">
-            <p className="text-sm text-stone-500">Nenhuma receita cadastrada ainda.</p>
+            <p className="text-sm text-stone-500">
+              Nenhuma receita cadastrada ainda.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

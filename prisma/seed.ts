@@ -53,6 +53,7 @@ async function main() {
       servings: 12,
       difficulty: Difficulty.FACIL,
       category: 'Doces & Sobremesas',
+      viewsCount: 980,
       coverImage:
         'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
       tips: 'Não bata a farinha de trigo em excesso no liquidificador; misture delicadamente com um fouet para o bolo ficar bem leve e fofo.',
@@ -125,6 +126,7 @@ async function main() {
       servings: 30,
       difficulty: Difficulty.MEDIO,
       category: 'Pães & Lanches',
+      viewsCount: 650,
       coverImage:
         'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=800&q=80',
       tips: 'Use queijo meia cura ou queijo minas padrão ralado no ralo grosso para formar aquelas bolsas de queijo derretido.',
@@ -174,6 +176,7 @@ async function main() {
       servings: 8,
       difficulty: Difficulty.FACIL,
       category: 'Doces & Sobremesas',
+      viewsCount: 1420,
       coverImage:
         'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=800&q=80',
       tips: 'A calda com sementes por cima dá um contraste visual lindo e crocância agradável.',
