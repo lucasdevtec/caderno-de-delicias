@@ -72,7 +72,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/lucasdevtec/caderno-de-delicias"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-orange-400 transition-colors"

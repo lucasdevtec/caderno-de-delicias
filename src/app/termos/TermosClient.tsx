@@ -361,7 +361,7 @@ function TermosContent() {
               </p>
               <p>
                 <strong>Repositório de Código Aberto:</strong>{' '}
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-semibold">
+                <a href="https://github.com/lucasdevtec/caderno-de-delicias/issues" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-semibold">
                   Canal de Issues no GitHub
                 </a>
               </p>

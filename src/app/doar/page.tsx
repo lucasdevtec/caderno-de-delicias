@@ -59,13 +59,18 @@ export default function DoarPage() {
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-2">
-            <h4 className="font-bold text-stone-900 text-sm">GitHub Sponsors</h4>
+            <h4 className="font-bold text-stone-900 text-sm">GitHub</h4>
             <p className="text-xs text-stone-500 leading-normal">
-              Apoie os desenvolvedores do repositório diretamente pela sua conta do GitHub.
+              Acompanhe o desenvolvimento, abra issues e apoie o projeto no GitHub.
             </p>
-            <span className="inline-block text-xs font-semibold text-orange-600">
-              github.com/sponsors
-            </span>
+            <a
+              href="https://github.com/lucasdevtec/caderno-de-delicias"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-xs font-semibold text-orange-600 hover:underline"
+            >
+              github.com/lucasdevtec/caderno-de-delicias
+            </a>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-2">
