@@ -28,6 +28,15 @@ Durante esta fase inicial de lançamento e crescimento orgânico, o Caderno de D
 - **GitHub Sponsors & Open Collective**: Garantindo transparência financeira para desenvolvedores e entusiastas de software livre que queiram apoiar o ecossistema open source.
 - **"Pague um Café para os Devs" (Buy Me a Coffee)**: Microdoações pontuais e descontraídas.
 
+### Estrutura de Custos e Política de Excedente:
+- **Custos Fixos Mensais de Infraestrutura (~R$ 100/mês)**:
+  - Servidor Web & API (Next.js): ~R$ 40/mês
+  - Banco de Dados (PostgreSQL gerenciado com backups): ~R$ 35/mês
+  - Armazenamento de Fotos & CDN: ~R$ 20/mês
+  - Domínio e Certificados SSL: ~R$ 5/mês
+- **Destino do Excedente**:
+  - Todo valor arrecadado que exceder os custos fixos essenciais de servidores é destinado a **valorizar as horas de trabalho e dedicação técnica do desenvolvedor** (programação de melhorias, correções de bugs, segurança e suporte) e **reinvestido diretamente na evolução contínua da plataforma**.
+
 ### Reconhecimento aos Apoiadores:
 - Badge comemorativo no perfil (ex: *Membro Fundador* ou *Apoiador da Cozinha*).
 - Menção honorária na página de apoiadores e no arquivo `CONTRIBUTORS.md` do repositório.

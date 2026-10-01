@@ -157,5 +157,5 @@ erDiagram
 - **PixDonationCard (`src/components/PixDonationCard.tsx`)**:
   - Componente com grid responsivo exibindo a chave aleatória oficial com botão de 1 clique e renderização do QR Code SVG para escaneamento direto pelo app do banco.
   - Função utilitária de cópia robusta (`copyToClipboard`) com fallback cross-browser (`document.execCommand`).
-- **Transparência de Custos (`/doar#transparencia`)**:
-  - Detalhamento dos custos fixos mensais de hospedagem, banco de dados gerenciado, domínio e armazenamento para prestação de contas com a comunidade.
+- **Transparência de Custos & Destino do Excedente (`/doar#transparencia`)**:
+  - Detalhamento dos custos fixos mensais de infraestrutura (~R$ 100/mês) e política de destinação do excedente para valorização do trabalho contínuo do desenvolvedor e reinvestimento na plataforma.

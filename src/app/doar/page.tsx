@@ -64,15 +64,18 @@ export default function DoarPage() {
         </div>
       </section>
 
-      {/* Seção Transparência de Custos */}
-      <section id="transparencia" className="space-y-4 pt-6 border-t border-stone-200">
-        <h3 className="text-xl font-bold text-stone-900">
-          Transparência e Custos de Manutenção
-        </h3>
-        <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-          Para mantermos o <strong>Caderno de Delícias</strong> funcionando de forma rápida, segura e livre de anúncios invasivos, nossos custos mensais estimados de infraestrutura são:
-        </p>
+      {/* Seção Transparência de Custos e Sustentabilidade */}
+      <section id="transparencia" className="space-y-6 pt-6 border-t border-stone-200">
+        <div className="space-y-1.5">
+          <h3 className="text-xl font-bold text-stone-900">
+            Transparência e Custos de Manutenção
+          </h3>
+          <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+            Para mantermos o <strong>Caderno de Delícias</strong> funcionando de forma rápida, segura e livre de anúncios invasivos, nossos custos fixos mensais de infraestrutura somam <strong>~R$ 100/mês</strong>:
+          </p>
+        </div>
 
+        {/* 4 Cards de Infraestrutura Fixa */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 bg-orange-50/60 rounded-2xl border border-orange-200/80">
             <div className="text-xs text-orange-800 font-semibold">Banco de Dados</div>
@@ -96,6 +99,25 @@ export default function DoarPage() {
             <div className="text-xs text-stone-700 font-semibold">Domínio & Segurança</div>
             <div className="text-lg font-black text-stone-900 mt-1">~R$ 5/mês</div>
             <p className="text-[11px] text-stone-600 mt-1">cadernodedelicias.com.br e certificados SSL.</p>
+          </div>
+        </div>
+
+        {/* Card de Destaque: Desenvolvimento, Manutenção e Reinvestimento do Excedente */}
+        <div className="p-5 bg-gradient-to-r from-orange-50 via-amber-50/60 to-orange-50 rounded-2xl border border-orange-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="space-y-1.5 flex-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-900 text-[11px] font-bold">
+              <span>💡 Destino do Excedente</span>
+            </div>
+            <h4 className="text-sm sm:text-base font-bold text-stone-900">
+              Desenvolvimento, Manutenção & Reinvestimento Contínuo
+            </h4>
+            <p className="text-xs text-stone-600 leading-relaxed max-w-2xl">
+              Após cobrir os custos fixos essenciais de servidores (~R$ 100/mês), todo valor arrecadado a mais é destinado a <strong>valorizar as horas dedicadas</strong> a programar melhorias, corrigir bugs, cuidar da segurança e <strong>reinvestido diretamente na evolução contínua</strong> do sistema.
+            </p>
+          </div>
+          <div className="text-left sm:text-right shrink-0 sm:pl-4 sm:border-l sm:border-orange-200">
+            <span className="text-[11px] font-bold text-orange-800 uppercase tracking-wider block">Destinação</span>
+            <span className="text-base sm:text-lg font-black text-orange-950">Todo Excedente</span>
           </div>
         </div>
       </section>
