@@ -169,6 +169,26 @@ function RegisterForm() {
               </>
             )}
           </button>
+
+          <p className="text-[11px] text-center text-stone-500 leading-relaxed px-2">
+            Ao se cadastrar, você concorda com nossos{' '}
+            <Link
+              href="/termos"
+              target="_blank"
+              className="text-orange-600 hover:underline font-semibold"
+            >
+              Termos de Uso
+            </Link>{' '}
+            e{' '}
+            <Link
+              href="/termos?tab=privacidade"
+              target="_blank"
+              className="text-orange-600 hover:underline font-semibold"
+            >
+              Política de Privacidade
+            </Link>
+            .
+          </p>
         </form>
 
         <p className="text-center text-xs text-stone-500">

@@ -65,6 +65,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/termos" className="flex items-center gap-1.5 hover:text-orange-400 transition-colors">
+                  <ShieldCheck className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Termos & Privacidade</span>
+                </Link>
+              </li>
+              <li>
                 <a
                   href="https://github.com"
                   target="_blank"
@@ -106,9 +112,14 @@ export function Footer() {
 
         <div className="mt-8 pt-6 border-t border-stone-800/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stone-500 gap-3">
           <p>© {new Date().getFullYear()} Caderno de Delícias (cadernodedelicias.com.br). Todos os direitos compartilhados.</p>
-          <p className="flex items-center gap-1">
-            Feito com carinho para cozinheiros, famílias e amantes da boa comida.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/termos" className="hover:text-stone-300 underline transition-colors">
+              Termos de Uso
+            </Link>
+            <Link href="/termos?tab=privacidade" className="hover:text-stone-300 underline transition-colors">
+              Privacidade (LGPD)
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

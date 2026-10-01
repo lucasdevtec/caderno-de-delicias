@@ -18,7 +18,9 @@ web/
 │   │   ├── cadernos/            # Páginas de listagem, criação, edição e detalhe de cadernos
 │   │   ├── descobrir/           # Feed público e busca global
 │   │   ├── doar/                # Página de doação via Pix e transparência de custos
-│   │   └── receitas/            # Páginas de minhas receitas, nova receita e detalhe
+│   │   ├── receitas/            # Páginas de minhas receitas, nova receita e detalhe
+│   │   ├── termos/              # Termos de Uso e Política de Privacidade (LGPD)
+│   │   └── privacidade/         # Redirecionamento amigável para política de privacidade
 │   ├── components/              # Componentes de interface (Navbar, Footer, Cards, Banners)
 │   └── lib/                     # Utilitários, auth (JWT/bcryptjs) e client do Prisma
 │       └── prisma/              # Singleton do PrismaClient e exportação de tipos/enums
@@ -139,6 +141,10 @@ erDiagram
      - Despacho modular via Resend ou log de depuração no terminal em desenvolvimento local.
      - Redefinição em `/redefinir-senha?token=...`, atualização de hash via `bcryptjs` e invalidação atômica de tokens de uso único.
 - Sessão gerenciada com JWT seguro via cookies `HttpOnly` (`jose`) e controle de acesso baseado em papéis (`USER` e `ADMIN`).
+- **Privacidade & Conformidade com LGPD (`/termos` e `/privacidade`)**:
+  - Política explícita de zero anúncios invasivos e proibição de venda de dados a corretores ou redes terceiras.
+  - Direitos plenos do titular garantidos (acesso, correção, portabilidade e exclusão de conta).
+  - Preservação moral da autoria das receitas e atribuição automática nos cadernos copiados (`ForkBadge`).
 
 ---
 
