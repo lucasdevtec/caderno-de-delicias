@@ -35,8 +35,8 @@ RUN npm install -g prisma@6.4.1 tsx@4.23.15
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Cria diretório de uploads com permissão correta
-RUN mkdir -p /app/uploads && chown -R nextjs:nodejs /app/uploads
+# Cria diretórios de uploads com permissão correta para o volume montado
+RUN mkdir -p /app/uploads /app/upload && chown -R nextjs:nodejs /app/uploads /app/upload
 
 # Copia dependências auxiliares para seed e runtime
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs

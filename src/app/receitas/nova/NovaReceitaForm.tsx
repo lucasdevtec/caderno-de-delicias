@@ -135,11 +135,28 @@ export function NovaReceitaForm({
       setIsCompressing(true);
       setErrorMsg("");
       const compressedDataUrl = await compressImage(file);
-      setCoverImage(compressedDataUrl);
+
+      // Envia para /api/upload para salvar no volume de disco do container
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64: compressedDataUrl,
+          filename: file.name,
+        }),
+      });
+
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error || "Não foi possível salvar a imagem no servidor.");
+      }
+
+      setCoverImage(uploadData.url);
       setImageFileName(file.name);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Erro ao processar imagem:", err);
-      setErrorMsg("Não foi possível carregar a imagem. Tente outra foto.");
+      const msg = err instanceof Error ? err.message : "Não foi possível processar a imagem. Tente outra foto.";
+      setErrorMsg(msg);
     } finally {
       setIsCompressing(false);
     }

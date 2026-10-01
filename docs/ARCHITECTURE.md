@@ -169,3 +169,19 @@ erDiagram
   - Função utilitária de cópia robusta (`copyToClipboard`) com fallback cross-browser (`document.execCommand`).
 - **Transparência de Custos & Destino do Excedente (`/doar#transparencia`)**:
   - Detalhamento dos custos fixos mensais de infraestrutura (~R$ 100/mês) e política de destinação do excedente para valorização do trabalho contínuo do desenvolvedor e reinvestimento na plataforma.
+
+---
+
+## 7. Armazenamento e Entrega de Imagens (Uploads & Volumes Docker)
+
+- **Diretório Persistente (`/app/uploads` e `./upload`)**:
+  - Imagens enviadas por usuários são salvas como arquivos físicos no disco montado via volume Docker, mantendo o banco de dados relacional leve e performático.
+  - Resolução resiliente através de [`src/lib/storage.ts`](file:///home/lucas/projetos/open_source/caderno-de-delicias/web/src/lib/storage.ts) suportando `UPLOADS_DIR`, volume Docker `/app/uploads` ou `./upload` local.
+- **API de Upload (`POST /api/upload`)**:
+  - Exige autenticação de sessão (`requireAuth`).
+  - Suporta tanto `multipart/form-data` quanto imagens comprimidas via Canvas em base64.
+  - Gera nomes únicos resistentes a colisão com timestamp e entropia criptográfica (`receita-[timestamp]-[hash].[ext]`).
+- **Entrega Estática com Cache Imutável (`GET /uploads/[...path]` e `/upload/[...path]`)**:
+  - Proteção estrita contra *directory traversal* através de `path.basename`.
+  - Headers HTTP de alta performance: `Cache-Control: public, max-age=31536000, immutable`.
+
