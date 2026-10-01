@@ -15,7 +15,6 @@ enum Difficulty {
 
 enum Role {
   USER
-  CHEF
   ADMIN
 }
 
