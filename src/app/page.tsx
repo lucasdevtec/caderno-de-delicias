@@ -198,18 +198,14 @@ export default async function HomePage() {
           <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-stone-300">
             <ChefHat className="w-12 h-12 text-orange-300 mx-auto mb-3" />
             <h3 className="font-bold text-stone-800 text-lg">
-              Seja o primeiro a compartilhar!
+              Nenhum caderno compartilhado por enquanto
             </h3>
             <p className="text-sm text-stone-500 mt-1 max-w-md mx-auto">
-              Execute o comando{' '}
-              <code className="bg-stone-100 px-2 py-0.5 rounded text-orange-700">
-                npm run db:seed
-              </code>{' '}
-              ou cadastre o primeiro caderno da plataforma.
+              Seja o primeiro a compartilhar suas receitas favoritas com a comunidade!
             </p>
             <Link
               href="/cadernos/novo"
-              className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold"
+              className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs"
             >
               <Plus className="w-4 h-4" /> Criar Caderno
             </Link>
