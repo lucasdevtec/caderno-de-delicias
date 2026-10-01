@@ -94,3 +94,24 @@ Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 | `npm run db:migrate` | Cria e aplica migrações do Prisma |
 | `npm run db:seed` | Executa o script de carga inicial de receitas e cadernos (`prisma/seed.ts`) |
 | `npm run db:studio` | Abre o painel visual do Prisma Studio no navegador |
+
+---
+
+## 🐳 6. Execução via Docker (Produção / Standalone)
+
+Para construir a imagem de produção ultraleve (~185MB) com Alpine Linux, Next.js Standalone e migrações automáticas:
+
+1. **Construir a imagem**:
+   ```bash
+   docker build -t caderno-de-delicias .
+   ```
+
+2. **Executar o container**:
+   ```bash
+   docker run -p 3000:3000 \
+     -e DATABASE_URL="postgresql://user:pass@host:5432/caderno_delicias?schema=public" \
+     -e AUTH_SECRET="sua-chave-secreta" \
+     -e RUN_SEED="false" \
+     caderno-de-delicias
+   ```
+   *(Defina `RUN_SEED="true"` na primeira inicialização para popular automaticamente as receitas de exemplo).*
