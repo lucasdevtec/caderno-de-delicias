@@ -48,6 +48,7 @@ export async function generateMetadata({ params }: ReceitaPageProps): Promise<Me
       description: true,
       coverImage: true,
       isPublic: true,
+      isDraft: true,
       user: {
         select: {
           name: true,
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: ReceitaPageProps): Promise<Me
     },
   });
 
-  if (!recipe || !recipe.isPublic) {
+  if (!recipe || !recipe.isPublic || recipe.isDraft) {
     return {
       title: 'Receita Não Encontrada ou Privada',
       robots: { index: false, follow: false },
@@ -135,13 +136,17 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     .catch((err) => console.error("Erro ao incrementar viewsCount:", err));
 
   const isAuthor = user?.id === recipe.userId;
-  if (!recipe.isPublic && !isAuthor) {
+  if ((recipe.isDraft || !recipe.isPublic) && !isAuthor) {
     return (
       <div className="max-w-md mx-auto my-20 p-8 bg-white rounded-3xl border border-stone-200 text-center space-y-4">
         <Lock className="w-12 h-12 text-stone-400 mx-auto" />
-        <h2 className="text-xl font-bold text-stone-900">Receita Privada</h2>
+        <h2 className="text-xl font-bold text-stone-900">
+          {recipe.isDraft ? "Rascunho Privado" : "Receita Privada"}
+        </h2>
         <p className="text-stone-500 text-sm">
-          Esta receita é privada e só pode ser visualizada pelo autor.
+          {recipe.isDraft
+            ? "Esta receita é um rascunho e só pode ser visualizada pelo autor."
+            : "Esta receita é privada e só pode ser visualizada pelo autor."}
         </p>
         <Link
           href="/descobrir"
@@ -256,7 +261,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
     : `${baseUrl}/icon.svg`;
 
-  const recipeJsonLd = recipe.isPublic
+  const recipeJsonLd = recipe.isPublic && !recipe.isDraft
     ? {
         '@context': 'https://schema.org',
         '@type': 'Recipe',
@@ -285,7 +290,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
         recipeInstructions: instructions.map((inst, index) => ({
           '@type': 'HowToStep',
           name: inst.title || `Passo ${inst.stepNumber || index + 1}`,
-          text: inst.description,
+          text: inst.description || inst.title || `Passo ${inst.stepNumber || index + 1}`,
           position: inst.stepNumber || index + 1,
         })),
         inLanguage: 'pt-BR',
@@ -303,6 +308,17 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
         />
+      )}
+
+      {recipe.isDraft && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-3 text-amber-900 text-sm">
+          <div className="flex items-center gap-2 font-semibold">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold shadow-2xs">
+              Rascunho
+            </span>
+            <span>Esta receita é um rascunho visível apenas para você.</span>
+          </div>
+        </div>
       )}
       {/* Top Navigation & Quick Action */}
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -490,26 +506,34 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
           </h2>
 
           <div className="space-y-4">
-            {instructions.map((step) => (
-              <div
-                key={step.stepNumber}
-                className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-stone-200/80 shadow-2xs hover:border-orange-200 transition-colors"
-              >
-                <span className="w-8 h-8 rounded-full bg-orange-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">
-                  {step.stepNumber}
-                </span>
-                <div className="space-y-1">
-                  {step.title && (
-                    <h3 className="font-bold text-stone-900 text-base">
-                      {step.title}
-                    </h3>
-                  )}
-                  <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-line">
-                    {step.description}
-                  </p>
+            {instructions.length === 0 ? (
+              <p className="text-sm text-stone-500 italic p-4 bg-stone-50 rounded-2xl border border-stone-200">
+                Nenhum passo de preparo cadastrado ainda neste rascunho.
+              </p>
+            ) : (
+              instructions.map((step) => (
+                <div
+                  key={step.stepNumber}
+                  className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-stone-200/80 shadow-2xs hover:border-orange-200 transition-colors"
+                >
+                  <span className="w-8 h-8 rounded-full bg-orange-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">
+                    {step.stepNumber}
+                  </span>
+                  <div className="space-y-1">
+                    {step.title && (
+                      <h3 className="font-bold text-stone-900 text-base">
+                        {step.title}
+                      </h3>
+                    )}
+                    {step.description && (
+                      <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-line">
+                        {step.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Dicas do Chef */}

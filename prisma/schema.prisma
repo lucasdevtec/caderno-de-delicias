@@ -120,6 +120,7 @@ model Recipe {
   category        String? // Sobremesa, Massas, Pães, Prato Principal, etc.
   coverImage      String?
   isPublic        Boolean    @default(true)
+  isDraft         Boolean    @default(false)
   tips            String?    @db.Text
   viewsCount      Int        @default(0)
 
@@ -139,6 +140,7 @@ model Recipe {
   @@unique([userId, slug])
   @@index([userId])
   @@index([isPublic])
+  @@index([isDraft])
   @@index([category])
   @@index([viewsCount])
 }

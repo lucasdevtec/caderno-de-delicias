@@ -92,6 +92,7 @@ export default async function DescobrirPage({
   const receitas = await prisma.recipe.findMany({
     where: {
       isPublic: true,
+      isDraft: false,
       ...(categoria ? { category: categoria } : {}),
       ...(q
         ? {

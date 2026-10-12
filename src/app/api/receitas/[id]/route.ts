@@ -44,9 +44,9 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Receita não encontrada" }, { status: 404 });
     }
 
-    if (!recipe.isPublic && (!user || user.id !== recipe.userId)) {
+    if ((recipe.isDraft || !recipe.isPublic) && (!user || user.id !== recipe.userId)) {
       return NextResponse.json(
-        { error: "Esta receita é privada do autor." },
+        { error: "Esta receita é privada ou um rascunho do autor." },
         { status: 403 }
       );
     }
@@ -102,6 +102,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
         ingredients: body.ingredients,
         instructions: body.instructions,
         isPublic: body.isPublic,
+        isDraft: typeof body.isDraft === "boolean" ? body.isDraft : recipe.isDraft,
       },
     });
 

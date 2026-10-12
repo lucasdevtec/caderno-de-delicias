@@ -16,6 +16,7 @@ export interface RecipeCardData {
   category?: string | null;
   coverImage?: string | null;
   viewsCount?: number | null;
+  isDraft?: boolean | null;
   user?: {
     id?: string;
     name?: string | null;
@@ -64,14 +65,19 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         )}
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-          {recipe.category ? (
-            <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 text-orange-800 shadow-xs backdrop-blur-xs">
-              {recipe.category}
-            </span>
-          ) : (
-            <span />
-          )}
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {recipe.isDraft && (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500 text-white shadow-xs">
+                Rascunho
+              </span>
+            )}
+            {recipe.category ? (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 text-orange-800 shadow-xs backdrop-blur-xs">
+                {recipe.category}
+              </span>
+            ) : null}
+          </div>
 
           <span
             className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeColor}`}

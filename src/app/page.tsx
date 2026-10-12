@@ -58,7 +58,7 @@ export default async function HomePage() {
     });
 
     receitasPublicas = await prisma.recipe.findMany({
-      where: { isPublic: true },
+      where: { isPublic: true, isDraft: false },
       include: {
         user: { select: { id: true, name: true, username: true } },
       },

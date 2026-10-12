@@ -112,6 +112,16 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
         },
       },
       recipes: {
+        where: {
+          recipe: user
+            ? {
+                OR: [
+                  { isDraft: false, isPublic: true },
+                  { userId: user.id },
+                ],
+              }
+            : { isDraft: false, isPublic: true },
+        },
         include: {
           recipe: {
             include: {

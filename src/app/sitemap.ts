@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let recipeRoutes: MetadataRoute.Sitemap = [];
   try {
     const recipes = await prisma.recipe.findMany({
-      where: { isPublic: true },
+      where: { isPublic: true, isDraft: false },
       select: {
         id: true,
         slug: true,

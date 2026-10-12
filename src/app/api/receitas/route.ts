@@ -6,7 +6,7 @@ import { generateSlug } from "@/lib/slug";
 
 const createRecipeSchema = z.object({
   title: z.string().min(2, "Título deve ter pelo menos 2 caracteres"),
-  description: z.string().optional(),
+  description: z.string().optional().default(""),
   prepTimeMinutes: z.number().int().nonnegative().optional().nullable(),
   cookTimeMinutes: z.number().int().nonnegative().optional().nullable(),
   servings: z.number().int().positive().optional().default(4),
@@ -16,19 +16,20 @@ const createRecipeSchema = z.object({
   tips: z.string().optional(),
   ingredients: z.array(
     z.object({
-      item: z.string().min(1),
-      quantity: z.string().min(1),
-      unit: z.string().optional(),
+      item: z.string().min(1, "Nome do ingrediente é obrigatório"),
+      quantity: z.string().optional().default(""),
+      unit: z.string().optional().default(""),
     })
-  ),
+  ).default([]),
   instructions: z.array(
     z.object({
       stepNumber: z.number().int(),
-      title: z.string().optional(),
-      description: z.string().min(1),
+      title: z.string().optional().default(""),
+      description: z.string().optional().default(""),
     })
-  ),
+  ).default([]),
   isPublic: z.boolean().default(true),
+  isDraft: z.boolean().default(false),
   cadernoId: z.string().optional(),
 });
 
@@ -37,6 +38,7 @@ export async function GET(req: Request) {
   const search = url.searchParams.get("q");
   const category = url.searchParams.get("categoria");
   const isPublicOnly = url.searchParams.get("public") === "true";
+  const status = url.searchParams.get("status");
   const user = await getCurrentUser();
 
   try {
@@ -44,10 +46,17 @@ export async function GET(req: Request) {
 
     if (isPublicOnly) {
       whereClause.isPublic = true;
+      whereClause.isDraft = false;
     } else if (user) {
       whereClause.userId = user.id;
+      if (status === "rascunhos") {
+        whereClause.isDraft = true;
+      } else if (status === "publicadas") {
+        whereClause.isDraft = false;
+      }
     } else {
       whereClause.isPublic = true;
+      whereClause.isDraft = false;
     }
 
     if (category) {
@@ -122,8 +131,31 @@ export async function POST(req: Request) {
       ingredients,
       instructions,
       isPublic,
+      isDraft,
       cadernoId,
     } = parsed.data;
+
+    // Regras de publicação vs rascunho:
+    // Se for publicação final, exige pelo menos 1 ingrediente e 1 passo
+    if (!isDraft) {
+      if (ingredients.length === 0) {
+        return NextResponse.json(
+          { error: "Adicione pelo menos um ingrediente para publicar a receita." },
+          { status: 400 }
+        );
+      }
+
+      const validSteps = instructions.filter(
+        (step) => (step.title && step.title.trim() !== "") || (step.description && step.description.trim() !== "")
+      );
+
+      if (validSteps.length === 0) {
+        return NextResponse.json(
+          { error: "Adicione pelo menos um passo de preparo (com título ou instruções) para publicar a receita." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Gerar slug único
     const baseSlug = generateSlug(title);
@@ -154,7 +186,8 @@ export async function POST(req: Request) {
           tips,
           ingredients,
           instructions,
-          isPublic,
+          isPublic: isDraft ? false : isPublic,
+          isDraft,
           userId: user.id,
         },
       });

@@ -18,6 +18,7 @@ import {
   X,
   Link2,
   Sparkles,
+  BookmarkCheck,
 } from "lucide-react";
 
 export interface CadernoOption {
@@ -120,7 +121,17 @@ export function NovaReceitaForm({
   ]);
 
   const [loading, setLoading] = useState(false);
+  const [savingAsDraft, setSavingAsDraft] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const topErrorRef = useRef<HTMLDivElement>(null);
+  const bottomErrorRef = useRef<HTMLDivElement>(null);
+
+  function showError(msg: string) {
+    setErrorMsg(msg);
+    setTimeout(() => {
+      bottomErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -215,54 +226,75 @@ export function NovaReceitaForm({
     setInstructions(updated);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
+  async function handleSave(asDraft: boolean, e?: React.FormEvent) {
+    if (e) e.preventDefault();
 
-    setLoading(true);
-    setErrorMsg("");
-
-    const validIngredients = ingredients.filter((i) => i.item.trim() !== "");
-    const validInstructions = instructions.filter((i) => i.description.trim() !== "");
-
-    if (validIngredients.length === 0) {
-      setErrorMsg("Adicione pelo menos um ingrediente para a sua receita.");
-      setLoading(false);
+    if (!title.trim()) {
+      showError("Por favor, preencha o título da receita.");
       return;
     }
 
-    if (validInstructions.length === 0) {
-      setErrorMsg("Adicione pelo menos um passo de preparo.");
-      setLoading(false);
-      return;
+    setLoading(true);
+    setSavingAsDraft(asDraft);
+    setErrorMsg("");
+
+    const validIngredients = ingredients
+      .filter((i) => i.item.trim() !== "")
+      .map((i) => ({
+        item: i.item.trim(),
+        quantity: i.quantity.trim(),
+        unit: i.unit.trim(),
+      }));
+
+    const validInstructions = instructions
+      .filter((i) => (i.title && i.title.trim() !== "") || (i.description && i.description.trim() !== ""))
+      .map((i, idx) => ({
+        stepNumber: idx + 1,
+        title: i.title.trim(),
+        description: i.description.trim(),
+      }));
+
+    if (!asDraft) {
+      if (validIngredients.length === 0) {
+        showError("Adicione pelo menos um ingrediente para publicar a sua receita.");
+        setLoading(false);
+        return;
+      }
+
+      if (validInstructions.length === 0) {
+        showError("Adicione pelo menos um passo no modo de preparo (com título ou instruções) para publicar a receita.");
+        setLoading(false);
+        return;
+      }
+
+      if (selectedCategory === "__NOVA__" && !customCategory.trim()) {
+        showError("Digite o nome da nova categoria.");
+        setLoading(false);
+        return;
+      }
     }
 
     // Define categoria final (existente ou nova criada pelo usuário)
     let finalCategory = selectedCategory;
     if (selectedCategory === "__NOVA__") {
-      const trimmedCustom = customCategory.trim();
-      if (!trimmedCustom) {
-        setErrorMsg("Digite o nome da nova categoria.");
-        setLoading(false);
-        return;
-      }
-      finalCategory = trimmedCustom;
+      finalCategory = customCategory.trim() || "Outros";
     }
 
     try {
       const payload = {
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         prepTimeMinutes: Number(prepTimeMinutes) || 0,
         cookTimeMinutes: Number(cookTimeMinutes) || 0,
         servings: Number(servings) || 4,
         difficulty,
         category: finalCategory,
         coverImage: coverImage.trim() || null,
-        tips,
+        tips: tips.trim(),
         ingredients: validIngredients,
         instructions: validInstructions,
-        isPublic,
+        isPublic: asDraft ? false : isPublic,
+        isDraft: asDraft,
         cadernoId: selectedCadernoId || undefined,
       };
 
@@ -280,7 +312,7 @@ export function NovaReceitaForm({
       router.push(`/receitas/${data.recipe.slug || data.recipe.id}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erro ao cadastrar receita.";
-      setErrorMsg(message);
+      showError(message);
       setLoading(false);
     }
   }
@@ -306,12 +338,16 @@ export function NovaReceitaForm({
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-50 text-red-700 text-xs sm:text-sm rounded-xl border border-red-200">
-            {errorMsg}
+          <div
+            ref={topErrorRef}
+            className="p-4 bg-red-50 text-red-700 text-xs sm:text-sm rounded-2xl border border-red-200 flex items-start gap-2.5"
+          >
+            <span className="font-bold shrink-0">⚠️ Atenção:</span>
+            <span>{errorMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={(e) => handleSave(false, e)} className="space-y-8">
           {/* Seção 1: Dados Básicos */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-stone-800 border-b border-stone-100 pb-2">
@@ -654,14 +690,19 @@ export function NovaReceitaForm({
 
           {/* Seção 3: Modo de Preparo Dinâmico */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-              <h2 className="text-base font-bold text-stone-800">
-                3. Modo de Preparo (Passo a Passo)
-              </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-stone-100 pb-2">
+              <div>
+                <h2 className="text-base font-bold text-stone-800">
+                  3. Modo de Preparo (Passo a Passo)
+                </h2>
+                <p className="text-xs text-stone-500">
+                  A descrição detalhada é opcional. Preencha o título, a descrição ou ambos.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={addInstruction}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 hover:text-orange-700 cursor-pointer self-start sm:self-auto mt-1 sm:mt-0"
               >
                 <Plus className="w-3.5 h-3.5" /> Adicionar Passo
               </button>
@@ -679,14 +720,14 @@ export function NovaReceitaForm({
                   <div className="flex-1 space-y-2">
                     <input
                       type="text"
-                      placeholder="Título do passo (ex: Bater a massa, Pré-aquecer o forno...)"
+                      placeholder="Título do passo (ex: Bater a massa, Pré-aquecer forno - opcional)"
                       value={inst.title}
                       onChange={(e) => updateInstruction(idx, "title", e.target.value)}
                       className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs bg-white font-semibold"
                     />
                     <textarea
                       rows={2}
-                      placeholder="Instruções detalhadas deste passo..."
+                      placeholder="Instruções detalhadas deste passo (opcional se preencher o título)..."
                       value={inst.description}
                       onChange={(e) => updateInstruction(idx, "description", e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs sm:text-sm bg-white resize-none"
@@ -697,6 +738,7 @@ export function NovaReceitaForm({
                     onClick={() => removeInstruction(idx)}
                     disabled={instructions.length === 1}
                     className="p-1 text-stone-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer mt-2"
+                    title="Remover passo"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -753,28 +795,61 @@ export function NovaReceitaForm({
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="pt-6 border-t border-stone-100 flex items-center justify-end gap-3">
+          {/* Feedback de Erro Visível no Rodapé */}
+          {errorMsg && (
+            <div
+              ref={bottomErrorRef}
+              className="p-4 bg-red-50 text-red-700 text-xs sm:text-sm rounded-2xl border border-red-200 flex items-start gap-2.5"
+            >
+              <span className="font-bold shrink-0">⚠️ Não foi possível salvar:</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Ações de Envio */}
+          <div className="pt-6 border-t border-stone-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <Link
               href="/receitas"
-              className="px-4 py-2 text-sm font-semibold text-stone-600 hover:text-stone-900"
+              className="px-4 py-2.5 text-center text-sm font-semibold text-stone-600 hover:text-stone-900 rounded-xl"
             >
               Cancelar
             </Link>
-            <button
-              type="submit"
-              disabled={loading || !title.trim()}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-bold shadow-xs transition-colors cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Salvando Receita...</span>
-                </>
-              ) : (
-                <span>Publicar Receita</span>
-              )}
-            </button>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleSave(true)}
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-sm font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {loading && savingAsDraft ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-stone-500" />
+                    <span>Salvando Rascunho...</span>
+                  </>
+                ) : (
+                  <>
+                    <BookmarkCheck className="w-4 h-4 text-stone-500" />
+                    <span>Salvar como Rascunho</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-bold shadow-xs transition-colors cursor-pointer"
+              >
+                {loading && !savingAsDraft ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Publicando Receita...</span>
+                  </>
+                ) : (
+                  <span>Publicar Receita</span>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
