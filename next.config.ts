@@ -5,6 +5,17 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.*.*'],
   images: {
     dangerouslyAllowSVG: true,
+    localPatterns: [
+      {
+        pathname: '/uploads/**',
+      },
+      {
+        pathname: '/upload/**',
+      },
+      {
+        pathname: '/**',
+      },
+    ],
     remotePatterns: [
       {
         protocol: 'https',
