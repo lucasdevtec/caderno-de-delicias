@@ -449,10 +449,14 @@ export function NovaReceitaForm({
               </label>
               <textarea
                 rows={2}
+                ref={(el) => adjustTextareaHeight(el)}
                 placeholder="Uma historinha rápida sobre essa receita ou o que a torna especial..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  adjustTextareaHeight(e.currentTarget);
+                }}
+                className="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-orange-500 text-sm resize-none overflow-hidden"
               />
             </div>
 
