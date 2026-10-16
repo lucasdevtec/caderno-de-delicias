@@ -1,24 +1,21 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getEntityUrlParam } from "@/lib/slug";
 import {
   ArrowLeft,
   Plus,
   Trash2,
-  Clock,
-  Users,
-  ChefHat,
   Loader2,
   Globe,
   Lock,
   Upload,
-  Image as ImageIcon,
   X,
   Link2,
-  Sparkles,
   BookmarkCheck,
+  FileEdit,
 } from "lucide-react";
 
 export interface CadernoOption {
@@ -26,9 +23,28 @@ export interface CadernoOption {
   title: string;
 }
 
+export interface InitialRecipeData {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  prepTimeMinutes?: number | null;
+  cookTimeMinutes?: number | null;
+  servings?: number | null;
+  difficulty?: string | null;
+  category?: string | null;
+  coverImage?: string | null;
+  tips?: string | null;
+  isPublic: boolean;
+  isDraft: boolean;
+  ingredients?: Array<{ item: string; quantity: string; unit?: string }>;
+  instructions?: Array<{ stepNumber: number; title?: string; description: string }>;
+}
+
 interface NovaReceitaFormProps {
   initialCadernos: CadernoOption[];
   initialCategories: string[];
+  initialRecipe?: InitialRecipeData;
 }
 
 // Comprime imagem do lado do cliente para gerar Data URL leve e rápida (max 1200x900, JPEG 82%)
@@ -74,51 +90,93 @@ function compressImage(file: File): Promise<string> {
   });
 }
 
+function adjustTextareaHeight(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 export function NovaReceitaForm({
   initialCadernos,
   initialCategories,
+  initialRecipe,
 }: NovaReceitaFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultCadernoId = searchParams.get("cadernoId") || "";
+  const isEditing = Boolean(initialRecipe);
 
   const [cadernos] = useState<CadernoOption[]>(initialCadernos);
   const [selectedCadernoId, setSelectedCadernoId] = useState(defaultCadernoId);
 
-  // Categorias
-  const [categories, setCategories] = useState<string[]>(initialCategories);
+  // Categorias (apenas seleção, sem criar nova categoria)
+  const [categories] = useState<string[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState(
-    initialCategories[0] || "Doces & Sobremesas"
+    initialRecipe?.category || initialCategories[0] || "Doces & Sobremesas"
   );
-  const [customCategory, setCustomCategory] = useState("");
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [prepTimeMinutes, setPrepTimeMinutes] = useState(20);
-  const [cookTimeMinutes, setCookTimeMinutes] = useState(30);
-  const [servings, setServings] = useState(4);
-  const [difficulty, setDifficulty] = useState("FACIL");
-  const [tips, setTips] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
+  const [title, setTitle] = useState(initialRecipe?.title || "");
+  const [description, setDescription] = useState(initialRecipe?.description || "");
+  const [prepTimeMinutes, setPrepTimeMinutes] = useState<string>(
+    initialRecipe?.prepTimeMinutes !== undefined && initialRecipe?.prepTimeMinutes !== null
+      ? String(initialRecipe.prepTimeMinutes)
+      : "20"
+  );
+  const [cookTimeMinutes, setCookTimeMinutes] = useState<string>(
+    initialRecipe?.cookTimeMinutes !== undefined && initialRecipe?.cookTimeMinutes !== null
+      ? String(initialRecipe.cookTimeMinutes)
+      : "30"
+  );
+  const [servings, setServings] = useState<string>(
+    initialRecipe?.servings !== undefined && initialRecipe?.servings !== null
+      ? String(initialRecipe.servings)
+      : "4"
+  );
+  const [difficulty, setDifficulty] = useState(initialRecipe?.difficulty || "FACIL");
+  const [tips, setTips] = useState(initialRecipe?.tips || "");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
+    initialRecipe && !initialRecipe.isDraft && !initialRecipe.isPublic
+      ? "PRIVATE"
+      : "PUBLIC"
+  );
 
   // Foto de capa com upload e preview
-  const [coverImage, setCoverImage] = useState("");
+  const [coverImage, setCoverImage] = useState(initialRecipe?.coverImage || "");
   const [imageFileName, setImageFileName] = useState("");
   const [isCompressing, setIsCompressing] = useState(false);
   const [showUrlFallback, setShowUrlFallback] = useState(false);
   const [fallbackUrlInput, setFallbackUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tipsTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Lista dinâmica de ingredientes
-  const [ingredients, setIngredients] = useState([
-    { item: "", quantity: "", unit: "" },
-    { item: "", quantity: "", unit: "" },
-  ]);
+  const [ingredients, setIngredients] = useState<
+    Array<{ item: string; quantity: string; unit: string }>
+  >(
+    initialRecipe?.ingredients && initialRecipe.ingredients.length > 0
+      ? initialRecipe.ingredients.map((i) => ({
+          item: i.item || "",
+          quantity: i.quantity || "",
+          unit: i.unit || "",
+        }))
+      : [
+          { item: "", quantity: "", unit: "" },
+          { item: "", quantity: "", unit: "" },
+        ]
+  );
 
   // Lista dinâmica de instruções
-  const [instructions, setInstructions] = useState([
-    { stepNumber: 1, title: "", description: "" },
-  ]);
+  const [instructions, setInstructions] = useState<
+    Array<{ stepNumber: number; title: string; description: string }>
+  >(
+    initialRecipe?.instructions && initialRecipe.instructions.length > 0
+      ? initialRecipe.instructions.map((s, idx) => ({
+          stepNumber: s.stepNumber || idx + 1,
+          title: s.title || "",
+          description: s.description || "",
+        }))
+      : [{ stepNumber: 1, title: "", description: "" }]
+  );
 
   const [loading, setLoading] = useState(false);
   const [savingAsDraft, setSavingAsDraft] = useState(false);
@@ -132,6 +190,10 @@ export function NovaReceitaForm({
       bottomErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 50);
   }
+
+  useEffect(() => {
+    adjustTextareaHeight(tipsTextareaRef.current);
+  }, [tips]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -197,9 +259,17 @@ export function NovaReceitaForm({
     setIngredients(ingredients.filter((_, i) => i !== index));
   }
 
-  function updateIngredient(index: number, field: string, value: string) {
+  function updateIngredient(index: number, field: "item" | "quantity" | "unit", value: string) {
+    let sanitized = value;
+    if (field === "quantity") {
+      // Unidade/Quantidade numérica: apenas dígitos, vírgula, ponto e barra
+      sanitized = value.replace(/[^0-9.,/]/g, "");
+    } else if (field === "unit") {
+      // Medida: apenas letras e espaços
+      sanitized = value.replace(/[^a-zA-ZÀ-ÿ\s]/g, "");
+    }
     const updated = [...ingredients];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index] = { ...updated[index], [field]: sanitized };
     setIngredients(updated);
   }
 
@@ -238,6 +308,9 @@ export function NovaReceitaForm({
     setSavingAsDraft(asDraft);
     setErrorMsg("");
 
+    const isDraft = asDraft;
+    const isPublic = visibility === "PUBLIC";
+
     const validIngredients = ingredients
       .filter((i) => i.item.trim() !== "")
       .map((i) => ({
@@ -254,7 +327,7 @@ export function NovaReceitaForm({
         description: i.description.trim(),
       }));
 
-    if (!asDraft) {
+    if (!isDraft) {
       if (validIngredients.length === 0) {
         showError("Adicione pelo menos um ingrediente para publicar a sua receita.");
         setLoading(false);
@@ -266,52 +339,48 @@ export function NovaReceitaForm({
         setLoading(false);
         return;
       }
-
-      if (selectedCategory === "__NOVA__" && !customCategory.trim()) {
-        showError("Digite o nome da nova categoria.");
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Define categoria final (existente ou nova criada pelo usuário)
-    let finalCategory = selectedCategory;
-    if (selectedCategory === "__NOVA__") {
-      finalCategory = customCategory.trim() || "Outros";
     }
 
     try {
+      const parsedPrep = prepTimeMinutes.trim() === "" ? 0 : Math.max(0, parseInt(prepTimeMinutes, 10) || 0);
+      const parsedCook = cookTimeMinutes.trim() === "" ? 0 : Math.max(0, parseInt(cookTimeMinutes, 10) || 0);
+      const parsedServings = servings.trim() === "" ? 1 : Math.max(1, parseInt(servings, 10) || 1);
+
       const payload = {
         title: title.trim(),
         description: description.trim(),
-        prepTimeMinutes: Number(prepTimeMinutes) || 0,
-        cookTimeMinutes: Number(cookTimeMinutes) || 0,
-        servings: Number(servings) || 4,
+        prepTimeMinutes: parsedPrep,
+        cookTimeMinutes: parsedCook,
+        servings: parsedServings,
         difficulty,
-        category: finalCategory,
+        category: selectedCategory,
         coverImage: coverImage.trim() || null,
         tips: tips.trim(),
         ingredients: validIngredients,
         instructions: validInstructions,
-        isPublic: asDraft ? false : isPublic,
-        isDraft: asDraft,
-        cadernoId: selectedCadernoId || undefined,
+        isPublic: isDraft ? false : isPublic,
+        isDraft,
+        cadernoId: !isEditing && selectedCadernoId ? selectedCadernoId : undefined,
       };
 
-      const res = await fetch("/api/receitas", {
-        method: "POST",
+      const endpoint = isEditing ? `/api/receitas/${initialRecipe!.id}` : "/api/receitas";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Erro ao criar receita.");
+        throw new Error(data.error || "Erro ao salvar receita.");
       }
 
-      router.push(`/receitas/${data.recipe.slug || data.recipe.id}`);
+      router.push(`/receitas/${getEntityUrlParam(data.recipe)}`);
+      router.refresh();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro ao cadastrar receita.";
+      const message = err instanceof Error ? err.message : "Erro ao salvar receita.";
       showError(message);
       setLoading(false);
     }
@@ -320,20 +389,26 @@ export function NovaReceitaForm({
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
       <Link
-        href="/receitas"
+        href={
+          isEditing && initialRecipe
+            ? `/receitas/${getEntityUrlParam(initialRecipe)}`
+            : "/receitas"
+        }
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Voltar para Minhas Receitas</span>
+        <span>{isEditing ? "Voltar para a Receita" : "Voltar para Minhas Receitas"}</span>
       </Link>
 
       <div className="bg-white rounded-3xl border border-stone-200/90 shadow-2xs p-6 sm:p-10 space-y-8">
         <div>
           <h1 className="text-3xl font-black text-stone-900 tracking-tight">
-            Nova Receita
+            {isEditing ? "Editar Rascunho de Receita" : "Nova Receita"}
           </h1>
           <p className="text-stone-500 text-sm mt-1">
-            Cadastre os detalhes, tempo, porções, foto, ingredientes e o passo a passo com carinho.
+            {isEditing
+              ? "Continue editando seu rascunho ou altere o status para publicar sua receita."
+              : "Cadastre os detalhes, tempo, porções, foto, ingredientes e o passo a passo com carinho."}
           </p>
         </div>
 
@@ -387,10 +462,11 @@ export function NovaReceitaForm({
                   Preparo (min)
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ex: 20"
                   value={prepTimeMinutes}
-                  onChange={(e) => setPrepTimeMinutes(Number(e.target.value))}
+                  onChange={(e) => setPrepTimeMinutes(e.target.value.replace(/\D/g, ""))}
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-sm"
                 />
               </div>
@@ -400,10 +476,11 @@ export function NovaReceitaForm({
                   Cozimento / Forno (min)
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ex: 30"
                   value={cookTimeMinutes}
-                  onChange={(e) => setCookTimeMinutes(Number(e.target.value))}
+                  onChange={(e) => setCookTimeMinutes(e.target.value.replace(/\D/g, ""))}
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-sm"
                 />
               </div>
@@ -413,10 +490,11 @@ export function NovaReceitaForm({
                   Rendimento (porções)
                 </label>
                 <input
-                  type="number"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ex: 4"
                   value={servings}
-                  onChange={(e) => setServings(Number(e.target.value))}
+                  onChange={(e) => setServings(e.target.value.replace(/\D/g, ""))}
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-sm"
                 />
               </div>
@@ -438,7 +516,7 @@ export function NovaReceitaForm({
                 </select>
               </div>
 
-              {/* Seletor Dinâmico de Categoria com opção de criar nova */}
+              {/* Seletor de Categoria */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
                   Categoria da Receita
@@ -453,27 +531,7 @@ export function NovaReceitaForm({
                       {cat}
                     </option>
                   ))}
-                  <option value="__NOVA__" className="font-bold text-orange-600">
-                    + Criar nova categoria...
-                  </option>
                 </select>
-
-                {selectedCategory === "__NOVA__" && (
-                  <div className="pt-1 space-y-1">
-                    <input
-                      type="text"
-                      required
-                      autoFocus
-                      placeholder="Digite o nome da nova categoria (ex: Comida Tailandesa, Sem Glúten...)"
-                      value={customCategory}
-                      onChange={(e) => setCustomCategory(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-orange-300 focus:outline-hidden focus:ring-2 focus:ring-orange-500 text-sm bg-orange-50/40"
-                    />
-                    <p className="text-[11px] text-stone-500">
-                      Esta categoria será adicionada e estará disponível no sistema.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -598,7 +656,7 @@ export function NovaReceitaForm({
             </div>
 
             {/* Adicionar a um Caderno */}
-            {cadernos.length > 0 && (
+            {!isEditing && cadernos.length > 0 && (
               <div className="space-y-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
                   Adicionar diretamente a um Caderno
@@ -643,17 +701,18 @@ export function NovaReceitaForm({
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      placeholder="Qtd (ex: 2)"
+                      inputMode="decimal"
+                      placeholder="Unid (ex: 2)"
                       value={ing.quantity}
                       onChange={(e) => updateIngredient(idx, "quantity", e.target.value)}
-                      className="w-24 sm:w-20 px-3 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white"
+                      className="w-24 sm:w-24 px-3 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white"
                     />
                     <input
                       type="text"
-                      placeholder="Unidade (ex: xícara)"
+                      placeholder="Medida (ex: xícara)"
                       value={ing.unit}
                       onChange={(e) => updateIngredient(idx, "unit", e.target.value)}
-                      className="flex-1 sm:w-28 px-3 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white"
+                      className="flex-1 sm:w-32 px-3 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white"
                     />
                     <button
                       type="button"
@@ -727,10 +786,14 @@ export function NovaReceitaForm({
                     />
                     <textarea
                       rows={2}
+                      ref={(el) => adjustTextareaHeight(el)}
                       placeholder="Instruções detalhadas deste passo (opcional se preencher o título)..."
                       value={inst.description}
-                      onChange={(e) => updateInstruction(idx, "description", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs sm:text-sm bg-white resize-none"
+                      onChange={(e) => {
+                        updateInstruction(idx, "description", e.target.value);
+                        adjustTextareaHeight(e.currentTarget);
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs sm:text-sm bg-white resize-none overflow-hidden"
                     />
                   </div>
                   <button
@@ -753,26 +816,30 @@ export function NovaReceitaForm({
               Dicas e Truques do Chef (Opcional)
             </label>
             <textarea
+              ref={tipsTextareaRef}
               rows={2}
               placeholder="Ex: Não bata demais para não solar, use queijo curado ralado na hora..."
               value={tips}
-              onChange={(e) => setTips(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm resize-none"
+              onChange={(e) => {
+                setTips(e.target.value);
+                adjustTextareaHeight(e.currentTarget);
+              }}
+              className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm resize-none overflow-hidden"
             />
           </div>
 
-          {/* Visibilidade */}
+          {/* Visibilidade / Status */}
           <div className="space-y-2 pt-2">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
-              Privacidade da Receita
+              Privacidade ao Publicar
             </label>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <input
                   type="radio"
                   name="recipeVis"
-                  checked={isPublic}
-                  onChange={() => setIsPublic(true)}
+                  checked={visibility === "PUBLIC"}
+                  onChange={() => setVisibility("PUBLIC")}
                   className="text-orange-600"
                 />
                 <span className="font-semibold text-stone-800 flex items-center gap-1">
@@ -784,8 +851,8 @@ export function NovaReceitaForm({
                 <input
                   type="radio"
                   name="recipeVis"
-                  checked={!isPublic}
-                  onChange={() => setIsPublic(false)}
+                  checked={visibility === "PRIVATE"}
+                  onChange={() => setVisibility("PRIVATE")}
                   className="text-stone-600"
                 />
                 <span className="font-semibold text-stone-800 flex items-center gap-1">
@@ -793,6 +860,9 @@ export function NovaReceitaForm({
                 </span>
               </label>
             </div>
+            <p className="text-[11px] text-stone-500">
+              Atenção: apenas receitas salvas como <strong>Rascunho</strong> podem ser editadas posteriormente.
+            </p>
           </div>
 
           {/* Feedback de Erro Visível no Rodapé */}
@@ -809,7 +879,11 @@ export function NovaReceitaForm({
           {/* Ações de Envio */}
           <div className="pt-6 border-t border-stone-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <Link
-              href="/receitas"
+              href={
+                isEditing && initialRecipe
+                  ? `/receitas/${getEntityUrlParam(initialRecipe)}`
+                  : "/receitas"
+              }
               className="px-4 py-2.5 text-center text-sm font-semibold text-stone-600 hover:text-stone-900 rounded-xl"
             >
               Cancelar
