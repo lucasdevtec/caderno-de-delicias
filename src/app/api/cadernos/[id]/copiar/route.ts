@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { generateSlug } from "@/lib/slug";
+import { buildEntityLookupOr, generateSlug } from "@/lib/slug";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: RouteParams) {
     // 1. Localizar o caderno de origem
     const sourceCaderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
       include: {
         user: { select: { id: true, name: true, username: true } },
@@ -50,8 +50,13 @@ export async function POST(req: Request, { params }: RouteParams) {
       );
     }
 
-    // Se o usuário já é o dono, pode duplicar, mas avisamos ou geramos uma cópia clara
     const isOwner = sourceCaderno.userId === user.id;
+    if (isOwner) {
+      return NextResponse.json(
+        { error: "Você já é o dono deste caderno." },
+        { status: 400 }
+      );
+    }
 
     // 3. Ler dados opcionais do corpo da requisição (ex: customizar título ou privacidade inicial)
     let customTitle = sourceCaderno.title;

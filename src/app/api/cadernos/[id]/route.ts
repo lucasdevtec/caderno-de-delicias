@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr } from "@/lib/slug";
 
 const updateCadernoSchema = z.object({
   title: z.string().min(2, "Título deve ter pelo menos 2 caracteres").optional(),
@@ -23,7 +24,7 @@ export async function GET(req: Request, { params }: RouteParams) {
   try {
     const caderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
       include: {
         user: {
@@ -82,8 +83,10 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 
   try {
-    const caderno = await prisma.caderno.findUnique({
-      where: { id },
+    const caderno = await prisma.caderno.findFirst({
+      where: {
+        OR: buildEntityLookupOr(id),
+      },
     });
 
     if (!caderno) {
@@ -108,7 +111,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     }
 
     const updated = await prisma.caderno.update({
-      where: { id },
+      where: { id: caderno.id },
       data: parsed.data,
     });
 
@@ -128,8 +131,10 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   }
 
   try {
-    const caderno = await prisma.caderno.findUnique({
-      where: { id },
+    const caderno = await prisma.caderno.findFirst({
+      where: {
+        OR: buildEntityLookupOr(id),
+      },
     });
 
     if (!caderno) {
@@ -144,7 +149,7 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     }
 
     await prisma.caderno.delete({
-      where: { id },
+      where: { id: caderno.id },
     });
 
     return NextResponse.json({ message: "Caderno excluído com sucesso." });

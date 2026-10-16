@@ -1,8 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import { BookMarked, Globe, Lock, UtensilsCrossed, GitFork } from "lucide-react";
+import { BookMarked, Globe, Lock } from "lucide-react";
 import { ForkBadge } from "./ForkBadge";
 import { CopyCadernoButton } from "./CopyCadernoButton";
+import { getEntityUrlParam } from "@/lib/slug";
 
 export interface CadernoCardData {
   id: string;
@@ -42,6 +43,7 @@ export function CadernoCard({ caderno, currentUserId }: CadernoCardProps) {
   const isOwner = Boolean(currentUserId && currentUserId === caderno.userId);
   const recipeCount = caderno.recipes ? caderno.recipes.length : 0;
   const isForked = Boolean(caderno.originalCadernoId || caderno.originalAuthorName);
+  const cadernoUrlParam = getEntityUrlParam(caderno);
 
   return (
     <div className="group flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-orange-300 shadow-xs hover:shadow-md transition-all overflow-hidden">
@@ -67,14 +69,14 @@ export function CadernoCard({ caderno, currentUserId }: CadernoCardProps) {
           </span>
 
           {/* Quick Copy Button if public and not owner */}
-          {caderno.isPublic && (
+          {caderno.isPublic && !isOwner && (
             <div>
               <CopyCadernoButton
                 cadernoId={caderno.id}
                 cadernoTitle={caderno.title}
                 isOwner={isOwner}
                 variant="secondary"
-                className="bg-white/90 hover:bg-white text-stone-900 border-none text-xs py-1 px-2.5 h-auto shadow-xs"
+                className="!bg-white hover:!bg-orange-50 !text-stone-900 hover:!text-orange-950 border-none text-xs py-1 px-2.5 h-auto shadow-xs"
               />
             </div>
           )}
@@ -113,7 +115,7 @@ export function CadernoCard({ caderno, currentUserId }: CadernoCardProps) {
           )}
 
           <Link
-            href={`/cadernos/${caderno.slug || caderno.id}`}
+            href={`/cadernos/${cadernoUrlParam}`}
             className="block group-hover:text-orange-600 transition-colors"
           >
             <h3 className="font-bold text-stone-900 text-lg line-clamp-1">
@@ -140,7 +142,7 @@ export function CadernoCard({ caderno, currentUserId }: CadernoCardProps) {
           </div>
 
           <Link
-            href={`/cadernos/${caderno.slug || caderno.id}`}
+            href={`/cadernos/${cadernoUrlParam}`}
             className="text-orange-600 hover:text-orange-700 font-semibold"
           >
             Abrir caderno →

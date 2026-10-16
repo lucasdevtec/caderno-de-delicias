@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr } from "@/lib/slug";
 
 const addRecipeSchema = z.object({
   recipeId: z.string().min(1, "ID da receita é obrigatório"),
@@ -18,7 +19,7 @@ export async function GET(req: Request, { params }: RouteParams) {
   try {
     const caderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
       include: {
         recipes: {
@@ -65,7 +66,7 @@ export async function POST(req: Request, { params }: RouteParams) {
   try {
     const caderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
     });
 
@@ -164,7 +165,7 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   try {
     const caderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
     });
 

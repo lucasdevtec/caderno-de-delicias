@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BookMarked, Globe, Lock, ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { Globe, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { getEntityUrlParam } from "@/lib/slug";
 
 const COLOR_PRESETS = [
   { name: "Laranja Culinário", hex: "#EA580C" },
@@ -47,7 +48,7 @@ export default function NovoCadernoPage() {
         throw new Error(data.error || "Erro ao criar caderno.");
       }
 
-      router.push(`/cadernos/${data.caderno.slug || data.caderno.id}`);
+      router.push(`/cadernos/${getEntityUrlParam(data.caderno)}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erro ao criar caderno.";
       setErrorMsg(message);

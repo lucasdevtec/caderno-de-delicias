@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Check, Loader2, GitFork } from "lucide-react";
+import { Check, Loader2, GitFork } from "lucide-react";
+import { getEntityUrlParam } from "@/lib/slug";
 
 interface CopyCadernoButtonProps {
   cadernoId: string;
@@ -23,6 +24,10 @@ export function CopyCadernoButton({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  if (isOwner) {
+    return null;
+  }
 
   async function handleCopy() {
     if (loading) return;
@@ -51,7 +56,7 @@ export function CopyCadernoButton({
       setCopied(true);
       setTimeout(() => {
         if (data.caderno?.id) {
-          router.push(`/cadernos/${data.caderno.id}`);
+          router.push(`/cadernos/${getEntityUrlParam(data.caderno)}`);
         } else {
           router.push("/cadernos");
         }
@@ -64,13 +69,13 @@ export function CopyCadernoButton({
   }
 
   const baseStyles =
-    "inline-flex items-center justify-center gap-2 font-medium transition-all rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-sm";
+    "inline-flex items-center justify-center gap-2 font-semibold transition-all rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-sm";
 
   const variants = {
     primary:
       "bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 shadow-sm hover:shadow-md active:scale-98",
     secondary:
-      "bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 px-3.5 py-2",
+      "bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 px-3.5 py-2",
     minimal: "text-stone-600 hover:text-orange-600 hover:bg-orange-50/60 p-2",
   };
 

@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr, getEntityUrlParam } from "@/lib/slug";
 import { RecipeOrderManager } from "@/components/RecipeOrderManager";
-import { ArrowLeft, ArrowUpDown, Trash2, Globe, Lock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { EditCadernoForm } from "./EditCadernoForm";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function EditCadernoPage({ params }: EditCadernoPageProps) 
 
   const caderno = await prisma.caderno.findFirst({
     where: {
-      OR: [{ id }, { slug: id }],
+      OR: buildEntityLookupOr(id),
     },
     include: {
       recipes: {
@@ -47,8 +48,10 @@ export default async function EditCadernoPage({ params }: EditCadernoPageProps) 
     notFound();
   }
 
+  const cadernoUrlParam = getEntityUrlParam(caderno);
+
   if (caderno.userId !== user.id) {
-    redirect(`/cadernos/${caderno.id}`);
+    redirect(`/cadernos/${cadernoUrlParam}`);
   }
 
   const initialRecipesForOrdering = caderno.recipes.map((cr) => ({
@@ -63,7 +66,7 @@ export default async function EditCadernoPage({ params }: EditCadernoPageProps) 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
       <Link
-        href={`/cadernos/${caderno.slug || caderno.id}`}
+        href={`/cadernos/${cadernoUrlParam}`}
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />

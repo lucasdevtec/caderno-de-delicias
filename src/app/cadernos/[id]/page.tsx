@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr, getEntityUrlParam } from "@/lib/slug";
 import { ForkBadge } from "@/components/ForkBadge";
 import { CopyCadernoButton } from "@/components/CopyCadernoButton";
 import { RecipeCard } from "@/components/RecipeCard";
@@ -12,7 +13,6 @@ import {
   Globe,
   Lock,
   ArrowUpDown,
-  Edit,
   Plus,
   ArrowLeft,
   UtensilsCrossed,
@@ -26,9 +26,10 @@ interface CadernoPageProps {
 
 export async function generateMetadata({ params }: CadernoPageProps): Promise<Metadata> {
   const { id } = await params;
+  const user = await getCurrentUser();
   const caderno = await prisma.caderno.findFirst({
     where: {
-      OR: [{ id }, { slug: id }],
+      OR: buildEntityLookupOr(id),
     },
     select: {
       id: true,
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: CadernoPageProps): Promise<Me
       coverColor: true,
       coverImage: true,
       isPublic: true,
+      userId: true,
       user: {
         select: {
           name: true,
@@ -47,15 +49,30 @@ export async function generateMetadata({ params }: CadernoPageProps): Promise<Me
     },
   });
 
-  if (!caderno || !caderno.isPublic) {
+  if (!caderno) {
     return {
-      title: "Caderno Não Encontrado ou Privado",
+      title: "Caderno Não Encontrado",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const isOwner = Boolean(user && user.id === caderno.userId);
+  if (!caderno.isPublic && !isOwner) {
+    return {
+      title: "Caderno Privado",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  if (!caderno.isPublic) {
+    return {
+      title: caderno.title,
       robots: { index: false, follow: false },
     };
   }
 
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://cadernodedelicias.com.br").replace(/\/$/, "");
-  const cadernoUrl = `${baseUrl}/cadernos/${caderno.slug || caderno.id}`;
+  const cadernoUrl = `${baseUrl}/cadernos/${getEntityUrlParam(caderno)}`;
   const authorName = caderno.user?.name || caderno.user?.username || "Comunidade";
   const ogImage = caderno.coverImage
     ? (caderno.coverImage.startsWith("http") ? caderno.coverImage : `${baseUrl}${caderno.coverImage}`)
@@ -98,7 +115,7 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
 
   const caderno = await prisma.caderno.findFirst({
     where: {
-      OR: [{ id }, { slug: id }],
+      OR: buildEntityLookupOr(id),
     },
     include: {
       user: { select: { id: true, name: true, username: true, image: true } },
@@ -159,7 +176,7 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
   }
 
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://cadernodedelicias.com.br").replace(/\/$/, "");
-  const cadernoUrl = `${baseUrl}/cadernos/${caderno.slug || caderno.id}`;
+  const cadernoUrl = `${baseUrl}/cadernos/${getEntityUrlParam(caderno)}`;
   const authorName = caderno.user?.name || caderno.user?.username || "Comunidade";
 
   const cadernoJsonLd = caderno.isPublic
@@ -181,7 +198,7 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
           itemListElement: caderno.recipes.map((cr, idx) => ({
             "@type": "ListItem",
             position: idx + 1,
-            url: `${baseUrl}/receitas/${cr.recipe.slug || cr.recipe.id}`,
+            url: `${baseUrl}/receitas/${getEntityUrlParam(cr.recipe)}`,
             name: cr.recipe.title,
           })),
         },
@@ -272,13 +289,13 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
 
             <div className="flex flex-wrap items-center gap-2">
               {/* Botão de Copiar se público e não for o dono */}
-              {caderno.isPublic && (
+              {caderno.isPublic && !isOwner && (
                 <CopyCadernoButton
                   cadernoId={caderno.id}
                   cadernoTitle={caderno.title}
                   isOwner={isOwner}
-                  variant="primary"
-                  className="bg-white text-orange-900 hover:bg-orange-50"
+                  variant="secondary"
+                  className="!bg-white hover:!bg-orange-50 !text-orange-950 border-none shadow-sm font-bold"
                 />
               )}
 
@@ -286,7 +303,7 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
               {isOwner && (
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    href={`/cadernos/${caderno.id}/editar`}
+                    href={`/cadernos/${getEntityUrlParam(caderno)}/editar`}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold text-xs sm:text-sm backdrop-blur-xs transition-colors"
                   >
                     <ArrowUpDown className="w-4 h-4" />
@@ -318,7 +335,7 @@ export default async function CadernoDetailPage({ params }: CadernoPageProps) {
 
           {isOwner && caderno.recipes.length > 1 && (
             <Link
-              href={`/cadernos/${caderno.id}/editar`}
+              href={`/cadernos/${getEntityUrlParam(caderno)}/editar`}
               className="text-xs font-semibold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
             >
               <ArrowUpDown className="w-3.5 h-3.5" />

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr } from "@/lib/slug";
 
 const reorderSchema = z.object({
   recipeOrders: z.array(
@@ -27,7 +28,7 @@ export async function POST(req: Request, { params }: RouteParams) {
   try {
     const caderno = await prisma.caderno.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
     });
 

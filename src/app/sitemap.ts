@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
+import { getEntityUrlParam } from '@/lib/slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     recipeRoutes = recipes.map((recipe) => ({
-      url: `${baseUrl}/receitas/${recipe.slug || recipe.id}`,
+      url: `${baseUrl}/receitas/${getEntityUrlParam(recipe)}`,
       lastModified: recipe.updatedAt,
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -70,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     cadernoRoutes = cadernos.map((caderno) => ({
-      url: `${baseUrl}/cadernos/${caderno.slug || caderno.id}`,
+      url: `${baseUrl}/cadernos/${getEntityUrlParam(caderno)}`,
       lastModified: caderno.updatedAt,
       changeFrequency: 'weekly',
       priority: 0.7,

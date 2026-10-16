@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { GitFork, ExternalLink, Sparkles } from "lucide-react";
+import { getEntityUrlParam } from "@/lib/slug";
 
 interface ForkBadgeProps {
   originalCadernoId?: string | null;
@@ -21,10 +22,10 @@ export function ForkBadge({
     return null;
   }
 
-  const destinationHref = originalCadernoSlug
+  const destinationHref = originalCadernoId
+    ? `/cadernos/${getEntityUrlParam({ id: originalCadernoId, slug: originalCadernoSlug })}`
+    : originalCadernoSlug
     ? `/cadernos/${originalCadernoSlug}`
-    : originalCadernoId
-    ? `/cadernos/${originalCadernoId}`
     : "#";
 
   return (
