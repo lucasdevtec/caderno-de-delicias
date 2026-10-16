@@ -74,11 +74,6 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-orange-50 via-amber-50/40 to-transparent pt-12 pb-16 px-4 sm:px-6 lg:px-8 border-b border-orange-100">
         <div className="max-w-5xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/80 border border-orange-200 text-orange-900 text-xs font-semibold shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-            <span>Projeto Open Source • cadernodedelicias.com.br</span>
-          </div>
-
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-tight sm:leading-none">
             Seu Caderno de Receitas,{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
@@ -201,7 +196,8 @@ export default async function HomePage() {
               Nenhum caderno compartilhado por enquanto
             </h3>
             <p className="text-sm text-stone-500 mt-1 max-w-md mx-auto">
-              Seja o primeiro a compartilhar suas receitas favoritas com a comunidade!
+              Seja o primeiro a compartilhar suas receitas favoritas com a
+              comunidade!
             </p>
             <Link
               href="/cadernos/novo"
