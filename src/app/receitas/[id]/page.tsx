@@ -6,18 +6,19 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { formatMinutes, formatDifficulty } from '@/lib/utils';
+import { buildEntityLookupOr, getEntityUrlParam } from '@/lib/slug';
 import {
   Clock,
   Users,
-  ChefHat,
   ArrowLeft,
   Sparkles,
   BookMarked,
-  CheckCircle2,
   Lock,
   Eye,
+  FileEdit,
 } from 'lucide-react';
 import { RecipeIngredientsList } from './RecipeIngredientsList';
+import { RecipeOwnerActions } from './RecipeOwnerActions';
 import { AddRecipeToCadernoButton } from '@/components/AddRecipeToCadernoButton';
 
 export const dynamic = 'force-dynamic';
@@ -37,9 +38,10 @@ interface ReceitaPageProps {
 
 export async function generateMetadata({ params }: ReceitaPageProps): Promise<Metadata> {
   const { id } = await params;
+  const user = await getCurrentUser();
   const recipe = await prisma.recipe.findFirst({
     where: {
-      OR: [{ id }, { slug: id }],
+      OR: buildEntityLookupOr(id),
     },
     select: {
       id: true,
@@ -49,6 +51,7 @@ export async function generateMetadata({ params }: ReceitaPageProps): Promise<Me
       coverImage: true,
       isPublic: true,
       isDraft: true,
+      userId: true,
       user: {
         select: {
           name: true,
@@ -58,15 +61,30 @@ export async function generateMetadata({ params }: ReceitaPageProps): Promise<Me
     },
   });
 
-  if (!recipe || !recipe.isPublic || recipe.isDraft) {
+  if (!recipe) {
     return {
-      title: 'Receita Não Encontrada ou Privada',
+      title: 'Receita Não Encontrada',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const isAuthor = Boolean(user && user.id === recipe.userId);
+  if ((!recipe.isPublic || recipe.isDraft) && !isAuthor) {
+    return {
+      title: 'Receita Privada',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  if (!recipe.isPublic || recipe.isDraft) {
+    return {
+      title: recipe.title,
       robots: { index: false, follow: false },
     };
   }
 
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://cadernodedelicias.com.br').replace(/\/$/, '');
-  const recipeUrl = `${baseUrl}/receitas/${recipe.slug || recipe.id}`;
+  const recipeUrl = `${baseUrl}/receitas/${getEntityUrlParam(recipe)}`;
   const authorName = recipe.user?.name || recipe.user?.username || 'Chef';
   const ogImage = recipe.coverImage
     ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
@@ -108,7 +126,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
 
   const recipe = await prisma.recipe.findFirst({
     where: {
-      OR: [{ id }, { slug: id }],
+      OR: buildEntityLookupOr(id),
     },
     include: {
       user: {
@@ -255,7 +273,8 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
     }>) || [];
 
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://cadernodedelicias.com.br').replace(/\/$/, '');
-  const recipeUrl = `${baseUrl}/receitas/${recipe.slug || recipe.id}`;
+  const recipeUrlParam = getEntityUrlParam(recipe);
+  const recipeUrl = `${baseUrl}/receitas/${recipeUrlParam}`;
   const authorName = recipe.user?.name || recipe.user?.username || 'Chef da Comunidade';
   const imageUrl = recipe.coverImage
     ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
@@ -323,26 +342,48 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
       {/* Top Navigation & Quick Action */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
-          href="/descobrir?tab=receitas"
+          href={isAuthor ? '/receitas' : '/descobrir?tab=receitas'}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Voltar para Receitas</span>
+          <span>{isAuthor ? 'Voltar para Minhas Receitas' : 'Voltar para Receitas'}</span>
         </Link>
 
-        <AddRecipeToCadernoButton
-          recipeId={recipe.id}
-          recipeTitle={recipe.title}
-          recipeSlug={recipe.slug}
-          isLoggedIn={Boolean(user)}
-          initialUserCadernos={initialUserCadernos}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          {isAuthor && (
+            <RecipeOwnerActions
+              recipeId={recipe.id}
+              recipeUrlParam={recipeUrlParam}
+              recipeTitle={recipe.title}
+              isDraft={recipe.isDraft}
+            />
+          )}
+
+          {!recipe.isDraft && (
+            <AddRecipeToCadernoButton
+              recipeId={recipe.id}
+              recipeTitle={recipe.title}
+              recipeSlug={recipeUrlParam}
+              isLoggedIn={Boolean(user)}
+              initialUserCadernos={initialUserCadernos}
+            />
+          )}
+        </div>
       </div>
 
       {/* Header & Cover Banner */}
       <div className="space-y-6">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
+            {recipe.isDraft ? (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                <FileEdit className="w-3.5 h-3.5" /> Rascunho
+              </span>
+            ) : !recipe.isPublic ? (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-stone-200 text-stone-800">
+                <Lock className="w-3.5 h-3.5" /> Privada
+              </span>
+            ) : null}
             {recipe.category && (
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
                 {recipe.category}
@@ -432,7 +473,11 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               src={recipe.coverImage}
               alt={recipe.title}
               fill
-              unoptimized={recipe.coverImage.startsWith('data:')}
+              unoptimized={
+                recipe.coverImage.startsWith('data:') ||
+                recipe.coverImage.startsWith('/uploads/') ||
+                recipe.coverImage.startsWith('/upload/')
+              }
               className="object-cover"
               priority
             />
@@ -453,7 +498,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
             {publicCadernoRecipes.map((cr) => (
               <Link
                 key={cr.caderno.id}
-                href={`/cadernos/${cr.caderno.slug || cr.caderno.id}`}
+                href={`/cadernos/${getEntityUrlParam(cr.caderno)}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 shadow-2xs"
                 style={{ backgroundColor: cr.caderno.coverColor || '#EA580C' }}
                 title={`Ver caderno público: ${cr.caderno.title}`}
@@ -480,7 +525,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               </span>
               {userPrivateCadernoRecipe && (
                 <Link
-                  href={`/cadernos/${userPrivateCadernoRecipe.caderno.slug || userPrivateCadernoRecipe.caderno.id}`}
+                  href={`/cadernos/${getEntityUrlParam(userPrivateCadernoRecipe.caderno)}`}
                   className="text-orange-600 font-bold hover:underline ml-1"
                   title="Abrir o seu caderno privado onde esta receita está guardada"
                 >

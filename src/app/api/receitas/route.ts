@@ -16,7 +16,7 @@ const createRecipeSchema = z.object({
   tips: z.string().optional(),
   ingredients: z.array(
     z.object({
-      item: z.string().min(1, "Nome do ingrediente é obrigatório"),
+      item: z.string(),
       quantity: z.string().optional().default(""),
       unit: z.string().optional().default(""),
     })
@@ -135,21 +135,26 @@ export async function POST(req: Request) {
       cadernoId,
     } = parsed.data;
 
+    const cleanIngredients = ingredients.filter((i) => i.item.trim() !== "");
+    const cleanInstructions = instructions
+      .filter(
+        (step) =>
+          (step.title && step.title.trim() !== "") ||
+          (step.description && step.description.trim() !== "")
+      )
+      .map((item, idx) => ({ ...item, stepNumber: idx + 1 }));
+
     // Regras de publicação vs rascunho:
     // Se for publicação final, exige pelo menos 1 ingrediente e 1 passo
     if (!isDraft) {
-      if (ingredients.length === 0) {
+      if (cleanIngredients.length === 0) {
         return NextResponse.json(
           { error: "Adicione pelo menos um ingrediente para publicar a receita." },
           { status: 400 }
         );
       }
 
-      const validSteps = instructions.filter(
-        (step) => (step.title && step.title.trim() !== "") || (step.description && step.description.trim() !== "")
-      );
-
-      if (validSteps.length === 0) {
+      if (cleanInstructions.length === 0) {
         return NextResponse.json(
           { error: "Adicione pelo menos um passo de preparo (com título ou instruções) para publicar a receita." },
           { status: 400 }
@@ -158,7 +163,7 @@ export async function POST(req: Request) {
     }
 
     // Gerar slug único
-    const baseSlug = generateSlug(title);
+    const baseSlug = generateSlug(title) || "receita";
     let slug = baseSlug;
     let counter = 1;
 
@@ -184,8 +189,8 @@ export async function POST(req: Request) {
           category,
           coverImage: coverImage || null,
           tips,
-          ingredients,
-          instructions,
+          ingredients: cleanIngredients,
+          instructions: cleanInstructions,
           isPublic: isDraft ? false : isPublic,
           isDraft,
           userId: user.id,

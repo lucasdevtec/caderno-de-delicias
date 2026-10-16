@@ -1,8 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Users, UtensilsCrossed, Eye } from "lucide-react";
+import { Clock, Users, UtensilsCrossed, Eye, FileEdit, Lock } from "lucide-react";
 import { formatMinutes, formatDifficulty } from "@/lib/utils";
+import { getEntityUrlParam } from "@/lib/slug";
 
 export interface RecipeCardData {
   id: string;
@@ -16,6 +17,7 @@ export interface RecipeCardData {
   category?: string | null;
   coverImage?: string | null;
   viewsCount?: number | null;
+  isPublic?: boolean;
   isDraft?: boolean | null;
   user?: {
     id?: string;
@@ -44,7 +46,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
   return (
     <Link
-      href={`/receitas/${recipe.slug || recipe.id}`}
+      href={`/receitas/${getEntityUrlParam(recipe)}`}
       className="group flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-orange-300 shadow-xs hover:shadow-md transition-all overflow-hidden"
     >
       {/* Cover Image */}
@@ -54,7 +56,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             src={recipe.coverImage}
             alt={recipe.title}
             fill
-            unoptimized={recipe.coverImage.startsWith("data:")}
+            unoptimized={
+              recipe.coverImage.startsWith("data:") ||
+              recipe.coverImage.startsWith("/uploads/") ||
+              recipe.coverImage.startsWith("/upload/")
+            }
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
@@ -65,13 +71,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         )}
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {recipe.isDraft && (
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500 text-white shadow-xs">
-                Rascunho
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {recipe.isDraft ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-900 shadow-xs backdrop-blur-xs">
+                <FileEdit className="w-3 h-3" /> Rascunho
               </span>
-            )}
+            ) : recipe.isPublic === false ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-stone-800/85 text-white shadow-xs backdrop-blur-xs">
+                <Lock className="w-3 h-3" /> Privada
+              </span>
+            ) : null}
             {recipe.category ? (
               <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 text-orange-800 shadow-xs backdrop-blur-xs">
                 {recipe.category}
@@ -80,7 +90,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           </div>
 
           <span
-            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeColor}`}
+            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${badgeColor}`}
           >
             {formatDifficulty(recipe.difficulty)}
           </span>

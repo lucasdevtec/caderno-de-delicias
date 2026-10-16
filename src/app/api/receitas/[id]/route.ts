@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { buildEntityLookupOr } from "@/lib/slug";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,8 +14,9 @@ export async function GET(req: Request, { params }: RouteParams) {
   try {
     const recipe = await prisma.recipe.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: buildEntityLookupOr(id),
       },
+      orderBy: user ? [{ createdAt: "desc" }] : undefined,
       include: {
         user: { select: { id: true, name: true, username: true, image: true, bio: true } },
         cadernos: {
@@ -70,8 +72,10 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 
   try {
-    const recipe = await prisma.recipe.findUnique({
-      where: { id },
+    const recipe = await prisma.recipe.findFirst({
+      where: {
+        OR: buildEntityLookupOr(id),
+      },
     });
 
     if (!recipe) {
@@ -85,10 +89,48 @@ export async function PUT(req: Request, { params }: RouteParams) {
       );
     }
 
+    if (!recipe.isDraft) {
+      return NextResponse.json(
+        { error: "Apenas receitas em rascunho podem ser editadas. Receitas já publicadas (públicas ou privadas) só podem ser excluídas." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
+    const isDraft = typeof body.isDraft === "boolean" ? body.isDraft : recipe.isDraft;
+
+    const rawIngredients = Array.isArray(body.ingredients) ? body.ingredients : [];
+    const rawInstructions = Array.isArray(body.instructions) ? body.instructions : [];
+
+    const cleanIngredients = rawIngredients.filter(
+      (i: { item?: string }) => i && typeof i.item === "string" && i.item.trim() !== ""
+    );
+    const cleanInstructions = rawInstructions
+      .filter(
+        (i: { title?: string; description?: string }) =>
+          i &&
+          ((typeof i.title === "string" && i.title.trim() !== "") ||
+            (typeof i.description === "string" && i.description.trim() !== ""))
+      )
+      .map((item: Record<string, unknown>, idx: number) => ({ ...item, stepNumber: idx + 1 }));
+
+    if (!isDraft) {
+      if (cleanIngredients.length === 0) {
+        return NextResponse.json(
+          { error: "Adicione pelo menos um ingrediente para publicar a receita." },
+          { status: 400 }
+        );
+      }
+      if (cleanInstructions.length === 0) {
+        return NextResponse.json(
+          { error: "Adicione pelo menos um passo de preparo (com título ou instruções) para publicar a receita." },
+          { status: 400 }
+        );
+      }
+    }
 
     const updated = await prisma.recipe.update({
-      where: { id },
+      where: { id: recipe.id },
       data: {
         title: body.title,
         description: body.description,
@@ -99,10 +141,10 @@ export async function PUT(req: Request, { params }: RouteParams) {
         category: body.category,
         coverImage: body.coverImage || null,
         tips: body.tips,
-        ingredients: body.ingredients,
-        instructions: body.instructions,
-        isPublic: body.isPublic,
-        isDraft: typeof body.isDraft === "boolean" ? body.isDraft : recipe.isDraft,
+        ingredients: cleanIngredients,
+        instructions: cleanInstructions,
+        isPublic: isDraft ? false : Boolean(body.isPublic),
+        isDraft,
       },
     });
 
@@ -122,8 +164,10 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   }
 
   try {
-    const recipe = await prisma.recipe.findUnique({
-      where: { id },
+    const recipe = await prisma.recipe.findFirst({
+      where: {
+        OR: buildEntityLookupOr(id),
+      },
     });
 
     if (!recipe) {
@@ -138,7 +182,7 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     }
 
     await prisma.recipe.delete({
-      where: { id },
+      where: { id: recipe.id },
     });
 
     return NextResponse.json({ message: "Receita excluída com sucesso." });
