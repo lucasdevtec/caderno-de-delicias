@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   allowedDevOrigins: ['192.168.*.*'],
   images: {
+    unoptimized: true,
     dangerouslyAllowSVG: true,
     localPatterns: [
       {
@@ -19,27 +20,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: '**',
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.gravatar.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'secure.gravatar.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'gravatar.com',
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },

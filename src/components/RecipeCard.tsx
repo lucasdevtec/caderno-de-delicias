@@ -56,11 +56,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             src={recipe.coverImage}
             alt={recipe.title}
             fill
-            unoptimized={
-              recipe.coverImage.startsWith("data:") ||
-              recipe.coverImage.startsWith("/uploads/") ||
-              recipe.coverImage.startsWith("/upload/")
-            }
+            unoptimized
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

@@ -473,11 +473,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
               src={recipe.coverImage}
               alt={recipe.title}
               fill
-              unoptimized={
-                recipe.coverImage.startsWith('data:') ||
-                recipe.coverImage.startsWith('/uploads/') ||
-                recipe.coverImage.startsWith('/upload/')
-              }
+              unoptimized
               className="object-cover"
               priority
             />

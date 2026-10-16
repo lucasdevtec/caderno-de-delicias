@@ -346,6 +346,8 @@ export function NovaReceitaForm({
       const parsedCook = cookTimeMinutes.trim() === "" ? 0 : Math.max(0, parseInt(cookTimeMinutes, 10) || 0);
       const parsedServings = servings.trim() === "" ? 1 : Math.max(1, parseInt(servings, 10) || 1);
 
+      const finalCoverImage = coverImage.trim() || fallbackUrlInput.trim() || null;
+
       const payload = {
         title: title.trim(),
         description: description.trim(),
@@ -354,7 +356,7 @@ export function NovaReceitaForm({
         servings: parsedServings,
         difficulty,
         category: selectedCategory,
-        coverImage: coverImage.trim() || null,
+        coverImage: finalCoverImage,
         tips: tips.trim(),
         ingredients: validIngredients,
         instructions: validInstructions,

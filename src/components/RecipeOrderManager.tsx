@@ -215,11 +215,7 @@ export function RecipeOrderManager({
                   src={recipe.coverImage}
                   alt={recipe.title}
                   fill
-                  unoptimized={
-                    recipe.coverImage.startsWith("data:") ||
-                    recipe.coverImage.startsWith("/uploads/") ||
-                    recipe.coverImage.startsWith("/upload/")
-                  }
+                  unoptimized
                   className="object-cover"
                 />
               ) : (
