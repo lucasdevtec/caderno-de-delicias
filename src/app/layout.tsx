@@ -16,18 +16,21 @@ const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://cadernodedelicias.c
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
+  applicationName: "Caderno de Delícias",
   title: {
     default: "Caderno de Delícias - Organize e Compartilhe suas Receitas",
     template: "%s | Caderno de Delícias",
   },
   description:
-    "Plataforma de código aberto para salvar suas receitas, organizar em cadernos públicos ou privados, ordenar pratos e copiar coleções com atribuição justa.",
+    "Caderno de Delícias é a plataforma de código aberto para salvar suas receitas, organizar em cadernos públicos ou privados, ordenar pratos e copiar coleções com atribuição justa.",
   keywords: [
+    "caderno de delícias",
+    "caderno de delicias",
+    "cadernodedelicias",
     "receitas",
     "caderno de receitas",
     "culinária",
     "livro de receitas",
-    "caderno de delícias",
     "receitas fáceis",
     "comida caseira",
     "gastronomia",
@@ -44,6 +47,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        verification: {
+          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        },
+      }
+    : {}),
   openGraph: {
     title: "Caderno de Delícias - Organize e Compartilhe suas Receitas",
     description:
@@ -54,10 +64,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/icon.svg",
-        width: 512,
-        height: 512,
-        alt: "Caderno de Delícias",
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Caderno de Delícias - Seu Caderno de Receitas, sem distrações",
       },
     ],
   },
@@ -66,7 +76,7 @@ export const metadata: Metadata = {
     title: "Caderno de Delícias - Organize e Compartilhe suas Receitas",
     description:
       "Crie seus cadernos de receitas, defina a ordem dos pratos e compartilhe com a comunidade sem anúncios invasivos.",
-    images: ["/icon.svg"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -86,20 +96,44 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const websiteJsonLd = {
+  const structuredDataJsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Caderno de Delícias",
-    alternateName: "CadernoDeDelicias",
-    url: baseUrl,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${baseUrl}/descobrir?q={search_term_string}`,
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${baseUrl}/#website`,
+        name: "Caderno de Delícias",
+        alternateName: [
+          "Caderno de Delicias",
+          "CadernoDeDelicias",
+          "cadernodedelicias.com.br",
+        ],
+        url: baseUrl,
+        inLanguage: "pt-BR",
+        publisher: {
+          "@id": `${baseUrl}/#organization`,
+        },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${baseUrl}/descobrir?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
-      "query-input": "required name=search_term_string",
-    },
+      {
+        "@type": "Organization",
+        "@id": `${baseUrl}/#organization`,
+        name: "Caderno de Delícias",
+        url: baseUrl,
+        logo: {
+          "@type": "ImageObject",
+          url: `${baseUrl}/icon.svg`,
+        },
+        sameAs: ["https://github.com/lucasdevtec/caderno-de-delicias"],
+      },
+    ],
   };
 
   return (
@@ -107,7 +141,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredDataJsonLd) }}
         />
       </head>
       <body className="antialiased flex flex-col min-h-screen selection:bg-orange-200 selection:text-orange-950">

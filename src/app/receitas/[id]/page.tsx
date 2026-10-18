@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: ReceitaPageProps): Promise<Me
   const authorName = recipe.user?.name || recipe.user?.username || 'Chef';
   const ogImage = recipe.coverImage
     ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
-    : `${baseUrl}/icon.svg`;
+    : `${baseUrl}/opengraph-image`;
 
   const description =
     recipe.description || `Confira a receita de ${recipe.title} por ${authorName} no Caderno de Delícias.`;
@@ -278,7 +278,7 @@ export default async function ReceitaDetailPage({ params }: ReceitaPageProps) {
   const authorName = recipe.user?.name || recipe.user?.username || 'Chef da Comunidade';
   const imageUrl = recipe.coverImage
     ? (recipe.coverImage.startsWith('http') ? recipe.coverImage : `${baseUrl}${recipe.coverImage}`)
-    : `${baseUrl}/icon.svg`;
+    : `${baseUrl}/opengraph-image`;
 
   const recipeJsonLd = recipe.isPublic && !recipe.isDraft
     ? {

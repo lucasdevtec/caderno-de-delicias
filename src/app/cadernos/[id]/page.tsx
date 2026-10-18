@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: CadernoPageProps): Promise<Me
   const authorName = caderno.user?.name || caderno.user?.username || "Comunidade";
   const ogImage = caderno.coverImage
     ? (caderno.coverImage.startsWith("http") ? caderno.coverImage : `${baseUrl}${caderno.coverImage}`)
-    : `${baseUrl}/icon.svg`;
+    : `${baseUrl}/opengraph-image`;
 
   const description =
     caderno.description ||

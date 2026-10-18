@@ -75,6 +75,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-b from-orange-50 via-amber-50/40 to-transparent pt-12 pb-16 px-4 sm:px-6 lg:px-8 border-b border-orange-100">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-tight sm:leading-none">
+            <span className="sr-only">Caderno de Delícias — </span>
             Seu Caderno de Receitas,{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
               sem distrações.
